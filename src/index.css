@@ -79,6 +79,27 @@ h3 {
   letter-spacing: 0.02em;
 }
 
+.brand-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.48rem;
+}
+
+.brand-subtitle {
+  font-size: clamp(1.25rem, 3.8vw, 1.8rem);
+}
+
+.app-icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  flex: 0 0 auto;
+}
+
+.app-icon-small {
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
 .home-actions,
 .inline-actions,
 .match-controls {
@@ -178,6 +199,12 @@ select {
   flex-wrap: wrap;
   justify-content: space-between;
   gap: 0.8rem;
+}
+
+.match-info {
+  display: grid;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .clock {

@@ -1,17 +1,22 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <defs>
-    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+    <radialGradient id="bg" cx="34%" cy="28%" r="82%">
+      <stop offset="0" stop-color="#fffef9" />
+      <stop offset="1" stop-color="#efe4cd" />
+    </radialGradient>
+    <linearGradient id="line" x1="0" x2="1" y1="0" y2="1">
       <stop offset="0" stop-color="#0f5ea8" />
       <stop offset="1" stop-color="#bf3f34" />
     </linearGradient>
   </defs>
-  <rect width="512" height="512" rx="110" fill="#f6f2e8" />
-  <circle cx="256" cy="256" r="176" fill="url(#g)" />
-  <circle cx="256" cy="256" r="120" fill="none" stroke="#fff" stroke-width="24" />
-  <path
-    d="M144 256h224M256 144v224M184 184l144 144M184 328l144-144"
-    stroke="#fff"
-    stroke-width="16"
-    stroke-linecap="round"
-  />
+  <rect width="512" height="512" rx="112" fill="#102234" />
+  <circle cx="256" cy="256" r="176" fill="url(#bg)" />
+  <circle cx="256" cy="256" r="176" fill="none" stroke="#f8f2e6" stroke-width="14" />
+
+  <path d="M80 256h352" fill="none" stroke="url(#line)" stroke-width="18" stroke-linecap="round" />
+  <path d="M256 80c72 34 122 96 142 176" fill="none" stroke="url(#line)" stroke-width="18" stroke-linecap="round" />
+  <path d="M256 432c-72-34-122-96-142-176" fill="none" stroke="url(#line)" stroke-width="18" stroke-linecap="round" />
+  <path d="M146 117c58 16 108 50 142 97" fill="none" stroke="url(#line)" stroke-width="14" stroke-linecap="round" />
+  <path d="M366 395c-58-16-108-50-142-97" fill="none" stroke="url(#line)" stroke-width="14" stroke-linecap="round" />
+  <circle cx="188" cy="166" r="16" fill="#0f5ea8" opacity="0.17" />
 </svg>

@@ -13,7 +13,7 @@ export default defineConfig(() => {
       react(),
       VitePWA({
         registerType: 'autoUpdate',
-        includeAssets: ['icon.svg'],
+        includeAssets: ['icon.svg', 'favicon.svg'],
         manifest: {
           name: 'Voley Match PWA',
           short_name: 'Voley',

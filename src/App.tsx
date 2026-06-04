@@ -32,6 +32,7 @@ import type {
 } from './types/models'
 
 type Screen = 'home' | 'new' | 'match' | 'history' | 'settings'
+const appIcon = `${import.meta.env.BASE_URL}icon.svg`
 
 const teamColorPalette = [
   '#0f5ea8',
@@ -326,7 +327,10 @@ function App() {
   const renderHome = () => (
     <main className="app-shell home-screen">
       <header>
-        <h1>Voley Match PWA</h1>
+        <h1 className="brand-title">
+          <img src={appIcon} alt="Pelota de voley" className="app-icon" />
+          Voley Match PWA
+        </h1>
         <p>Marcador offline, rapido y listo para partidos reales.</p>
       </header>
 
@@ -351,7 +355,10 @@ function App() {
 
   const renderNewMatch = () => (
     <main className="app-shell form-screen">
-      <h2>Nuevo partido</h2>
+      <h2 className="brand-title brand-subtitle">
+        <img src={appIcon} alt="Pelota de voley" className="app-icon" />
+        Nuevo partido
+      </h2>
 
       <section className="form-grid">
         <h3>Equipo A</h3>
@@ -525,7 +532,8 @@ function App() {
     return (
       <main className="app-shell match-screen">
         <header className="match-topbar">
-          <div>
+          <div className="match-info">
+            <img src={appIcon} alt="Pelota de voley" className="app-icon app-icon-small" />
             <strong>
               Sets para ganar: {neededSets} | Resultado: {projection.setsWon.A} -{' '}
               {projection.setsWon.B}
@@ -650,7 +658,10 @@ function App() {
   const renderHistory = () => (
     <main className="app-shell history-screen">
       <header className="inline-actions">
-        <h2>Historial de partidos</h2>
+        <h2 className="brand-title brand-subtitle">
+          <img src={appIcon} alt="Pelota de voley" className="app-icon" />
+          Historial de partidos
+        </h2>
         <button type="button" className="secondary" onClick={() => setScreen('home')}>
           Volver
         </button>
@@ -735,6 +746,10 @@ function App() {
 
   const renderSettings = () => (
     <main className="app-shell form-screen">
+      <h2 className="brand-title brand-subtitle">
+        <img src={appIcon} alt="Pelota de voley" className="app-icon" />
+        Configuracion
+      </h2>
       <SettingsPanel
         settings={settings}
         onChange={(next) => {
