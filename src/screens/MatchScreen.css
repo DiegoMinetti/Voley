@@ -5,9 +5,138 @@
 .match-screen {
   display: flex;
   flex-direction: column;
-  min-height: 100svh;
+  /* Lock the screen to the viewport (with dvh fallback for mobile address
+     bars). We intentionally use a fixed height + overflow:hidden so the
+     score view never scrolls — the two halves absorb the whole viewport. */
+  height: 100svh;
+  height: 100dvh;
+  overflow: hidden;
   background: var(--md-sys-color-background);
   color: var(--md-sys-color-on-background);
+}
+
+/* When the user hides the top bar / bottom controls we *collapse them out
+   of the layout* (max-height → 0) so the two score halves take the full
+   viewport height — not just visually translate, but actually reclaim
+   the vertical space. The max-height + opacity transition gives a smooth
+   feel without leaking any white space below the score. */
+.match-screen__top-bar,
+.match-screen__controls {
+  flex: 0 0 auto;
+  max-height: 200px;
+  overflow: hidden;
+  opacity: 1;
+  transition:
+    max-height var(--md-sys-motion-duration-medium3)
+      var(--md-sys-motion-easing-emphasized),
+    opacity var(--md-sys-motion-duration-medium2)
+      var(--md-sys-motion-easing-emphasized),
+    padding var(--md-sys-motion-duration-medium3)
+      var(--md-sys-motion-easing-emphasized),
+    border-color var(--md-sys-motion-duration-medium2)
+      var(--md-sys-motion-easing-emphasized);
+}
+
+.match-screen--chrome-hidden .match-screen__top-bar,
+.match-screen--chrome-hidden .match-screen__controls {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.match-screen--chrome-hidden .match-screen__controls {
+  padding-top: 0;
+  padding-bottom: 0;
+  border-top-color: transparent;
+}
+
+/* Floating draggable toggle. Lives at the top of the score area (which is
+   the only "always visible" surface once the chrome is collapsed).
+   - Chrome visible  : pill with chevron-up → indicates "drag up / tap to hide".
+   - Chrome hidden   : pill with chevron-down → indicates "drag down / tap to show". */
+.match-screen__chrome-toggle {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  z-index: 7;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+  cursor: grab;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: none;
+  /* Default state: sitting at the top, slight idle lift so it reads as a
+     draggable handle. We translate(-50%, 0) so horizontal centering is
+     unaffected by any vertical drag offset. */
+  transform: translate(-50%, 0);
+  transition:
+    top var(--md-sys-motion-duration-medium3)
+      var(--md-sys-motion-easing-emphasized),
+    background-color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+}
+
+.match-screen__chrome-toggle:hover {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.match-screen__chrome-toggle:active {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.match-screen__chrome-toggle:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+/* While the user is actively dragging we want 1:1 tracking with the finger
+   and no spring-back easing. */
+.match-screen__chrome-toggle--dragging {
+  cursor: grabbing;
+  transition: none;
+}
+
+/* When the chrome is hidden the top bar is 0px tall, so the toggle sits
+   flush against the top edge of the score area. Same `top: 8px` works in
+   both states — the only thing that changes is the surrounding layout. */
+.match-screen--chrome-hidden .match-screen__chrome-toggle {
+  /* nudge it down just a touch so it doesn't touch the status-bar area */
+  top: 10px;
+}
+
+.match-screen__chrome-toggle .material-symbols-rounded {
+  font-size: 22px;
+  line-height: 1;
+  transition: transform var(--md-sys-motion-duration-medium2)
+    var(--md-sys-motion-easing-emphasized);
+}
+
+/* Chevron flips 180° when toggling state, so the icon itself rotates
+   instead of just swapping glyphs. */
+.match-screen--chrome-hidden .match-screen__chrome-toggle .material-symbols-rounded {
+  transform: rotate(180deg);
+}
+
+@media (max-width: 480px) {
+  .match-screen__chrome-toggle {
+    top: 6px;
+    width: 52px;
+    height: 26px;
+  }
+  .match-screen--chrome-hidden .match-screen__chrome-toggle {
+    top: 8px;
+  }
 }
 
 /* Clock shown in the headline slot of the TopAppBar. */

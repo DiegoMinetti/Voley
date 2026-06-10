@@ -22,7 +22,11 @@
   justify-content: center;
   gap: 8px;
   width: 100%;
-  min-height: 220px;
+  /* No fixed min-height: the parent (MatchScreen) locks the viewport to
+     exactly 100dvh, so each half absorbs whatever vertical space is left
+     after the top bar / bottom controls. A floor of 0 + flex:1 lets the
+     two halves fill the screen without overflowing into a scrollbar. */
+  min-height: 0;
   flex: 1;
   padding: 24px 12px;
   border: none;
