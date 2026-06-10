@@ -17,9 +17,9 @@ export default defineConfig(() => {
         manifest: {
           name: 'Voley Match PWA',
           short_name: 'Voley',
-          description: 'Marcador de voley offline con event sourcing',
-          theme_color: '#0f5ea8',
-          background_color: '#f6f2e8',
+          description: 'Marcador offline de voley con Material Design 3',
+          theme_color: '#6750a4',
+          background_color: '#fef7ff',
           display: 'standalone',
           orientation: 'portrait',
           start_url: base,

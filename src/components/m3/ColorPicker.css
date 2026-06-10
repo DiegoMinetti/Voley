@@ -1,0 +1,105 @@
+/* ==========================================================================
+   ColorPicker
+   ========================================================================== */
+.md-color-picker {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-medium);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.md-color-picker__label {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-color-picker__swatches {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.md-color-picker__swatch {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: var(--md-sys-shape-corner-full);
+  border: 2px solid var(--md-sys-color-outline-variant);
+  background: var(--swatch-color);
+  cursor: pointer;
+  padding: 0;
+  transition:
+    transform var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-color-picker__swatch:hover {
+  transform: scale(1.06);
+}
+
+.md-color-picker__swatch--selected {
+  border-color: var(--md-sys-color-on-surface);
+  box-shadow: 0 0 0 2px var(--md-sys-color-surface);
+}
+
+.md-color-picker__swatch--selected::after {
+  content: 'check';
+  font-family: 'Material Symbols Rounded';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 18px;
+  text-shadow: 0 1px 2px rgb(0 0 0 / 0.4);
+  font-variation-settings:
+    'FILL' 1,
+    'wght' 400,
+    'GRAD' 0,
+    'opsz' 24;
+}
+
+.md-color-picker__custom {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 12px;
+}
+
+.md-color-picker__custom-field {
+  display: grid;
+  gap: 4px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.md-color-picker__custom-field input[type='color'] {
+  width: 100%;
+  height: 40px;
+  padding: 0;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: transparent;
+  cursor: pointer;
+}
+
+.md-color-picker__hex {
+  height: 40px;
+  padding: 0 12px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  background: var(--md-sys-color-surface-container-highest);
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-body-medium-size);
+  font-family: var(--md-sys-typescale-font);
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.md-color-picker__hex:focus {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+  border-color: transparent;
+}

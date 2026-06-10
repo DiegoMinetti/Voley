@@ -1,0 +1,168 @@
+/* ==========================================================================
+   WinnerOverlay — full-screen celebration when the match ends
+   ========================================================================== */
+
+.winner-overlay {
+  --winner-color: var(--md-sys-color-primary);
+
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: color-mix(in srgb, var(--md-sys-color-scrim) 55%, transparent);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 280ms var(--md-sys-motion-easing-emphasized);
+}
+
+.winner-overlay--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.winner-overlay--closing {
+  opacity: 0;
+}
+
+.winner-overlay__card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: min(420px, 100%);
+  padding: 36px 28px 28px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  box-shadow: var(--md-sys-elevation-3);
+  text-align: center;
+  transform: scale(0.85) translateY(16px);
+  opacity: 0;
+  transition:
+    transform 360ms var(--md-sys-motion-easing-emphasized-decelerate),
+    opacity 360ms var(--md-sys-motion-easing-emphasized-decelerate);
+}
+
+.winner-overlay--open .winner-overlay__card {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+
+.winner-overlay--closing .winner-overlay__card {
+  transform: scale(0.92) translateY(8px);
+  opacity: 0;
+}
+
+.winner-overlay__trophy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 144px;
+  height: 144px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: color-mix(in srgb, var(--winner-color) 22%, var(--md-sys-color-surface-container));
+  color: var(--winner-color);
+  margin-bottom: 4px;
+  animation: winner-overlay__trophy-pop 700ms
+    var(--md-sys-motion-easing-emphasized-decelerate) 120ms backwards;
+}
+
+.winner-overlay__trophy .material-symbols-rounded {
+  font-size: 96px;
+  color: var(--winner-color);
+}
+
+.winner-overlay__eyebrow {
+  margin: 0;
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-primary);
+}
+
+.winner-overlay__name {
+  margin: 0;
+  font-size: var(--md-sys-typescale-headline-medium-size);
+  line-height: var(--md-sys-typescale-headline-medium-line);
+  font-weight: var(--md-sys-typescale-headline-medium-weight);
+  letter-spacing: var(--md-sys-typescale-headline-medium-tracking);
+  color: var(--md-sys-color-on-surface);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.winner-overlay__score {
+  margin: 0;
+  font-size: var(--md-sys-typescale-title-medium-size);
+  line-height: var(--md-sys-typescale-title-medium-line);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+  color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
+
+.winner-overlay__close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--md-sys-color-on-surface-variant);
+  border-radius: var(--md-sys-shape-corner-full);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: background-color 120ms var(--md-sys-motion-easing-standard);
+}
+
+.winner-overlay__close:hover,
+.winner-overlay__close:focus-visible {
+  background: var(--md-sys-color-surface-container-highest);
+  outline: none;
+}
+
+.winner-overlay__close .material-symbols-rounded {
+  font-size: 22px;
+}
+
+@keyframes winner-overlay__trophy-pop {
+  0% {
+    transform: scale(0) rotate(-12deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .winner-overlay,
+  .winner-overlay__card,
+  .winner-overlay__trophy {
+    transition: none;
+    animation: none;
+  }
+  .winner-overlay--open .winner-overlay__card {
+    transform: none;
+    opacity: 1;
+  }
+}

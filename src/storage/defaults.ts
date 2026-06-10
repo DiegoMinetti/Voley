@@ -6,7 +6,11 @@ export const defaultUserSettings: UserSettings = {
   tapToAdd: false,
   confirmFinish: true,
   showClock: true,
-  showLiveHistory: true,
+  showTimeoutButtons: false,
+  pointsScale: 1,
+  teamNameScale: 1,
+  setsScale: 1,
+  globalScale: 1,
 }
 
 export const defaultMatchConfig: MatchConfig = {
@@ -18,5 +22,5 @@ export const defaultMatchConfig: MatchConfig = {
   vibration: defaultUserSettings.vibration,
   confirmFinish: defaultUserSettings.confirmFinish,
   showClock: defaultUserSettings.showClock,
-  showLiveHistory: defaultUserSettings.showLiveHistory,
+  showTimeoutButtons: defaultUserSettings.showTimeoutButtons,
 }

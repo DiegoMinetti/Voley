@@ -1,0 +1,141 @@
+/* ==========================================================================
+   ScoreHalf — M3 themed scoreboard half
+   ========================================================================== */
+
+.score-half {
+  --team-color: var(--md-sys-color-primary);
+  --team-on: #ffffff;
+  --points-scale: 1;
+  --team-name-scale: 1;
+  --sets-scale: 1;
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 220px;
+  flex: 1;
+  padding: 24px 12px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--team-color);
+  color: var(--team-on);
+  font-family: var(--md-sys-typescale-font);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  overflow: hidden;
+  transition:
+    background-color var(--md-sys-motion-duration-medium2)
+      var(--md-sys-motion-easing-emphasized),
+    transform var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+}
+
+.score-half::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--team-on);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short2)
+    var(--md-sys-motion-easing-standard);
+}
+.score-half:hover::before {
+  opacity: var(--md-sys-state-hover);
+}
+.score-half:focus-visible::before {
+  opacity: var(--md-sys-state-focus);
+}
+.score-half:active::before {
+  opacity: var(--md-sys-state-pressed);
+  transition-duration: 0ms;
+}
+
+.score-half--finished {
+  opacity: 0.6;
+}
+
+.score-half__points {
+  font-size: calc(clamp(140px, 38vw, 360px) * var(--points-scale, 1));
+  line-height: 0.9;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.05em;
+  font-family: var(--md-sys-typescale-font-brand);
+  position: relative;
+  z-index: 1;
+}
+
+.score-half__name {
+  font-size: calc(
+    var(--md-sys-typescale-title-large-size) * var(--team-name-scale, 1)
+  );
+  line-height: var(--md-sys-typescale-title-large-line);
+  font-weight: var(--md-sys-typescale-title-large-weight);
+  letter-spacing: var(--md-sys-typescale-title-large-tracking);
+  text-align: center;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  position: relative;
+  z-index: 1;
+}
+
+.score-half__sets {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: calc(4px * var(--sets-scale, 1)) calc(12px * var(--sets-scale, 1));
+  border-radius: var(--md-sys-shape-corner-full);
+  background: color-mix(in srgb, var(--team-on) 18%, transparent);
+  font-size: calc(
+    var(--md-sys-typescale-label-large-size) * var(--sets-scale, 1)
+  );
+  line-height: var(--md-sys-typescale-label-large-line);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  position: relative;
+  z-index: 1;
+}
+
+
+/* ==========================================================================
+   Compact mode — landscape phone. The two halves share the viewport with no
+   chrome, so we trim padding, shrink the name + sets, and let the points
+   number scale to the available height.
+   ========================================================================== */
+
+.score-half--compact {
+  min-height: 0;
+  padding: 8px 12px;
+  gap: 4px;
+  border-radius: var(--md-sys-shape-corner-medium);
+}
+
+.score-half--compact .score-half__points {
+  font-size: calc(clamp(120px, 34vh, 320px) * var(--points-scale, 1));
+}
+
+.score-half--compact .score-half__name {
+  font-size: calc(
+    var(--md-sys-typescale-title-small-size) * var(--team-name-scale, 1)
+  );
+  line-height: var(--md-sys-typescale-title-small-line);
+  font-weight: var(--md-sys-typescale-title-small-weight);
+  letter-spacing: var(--md-sys-typescale-title-small-tracking);
+}
+
+.score-half--compact .score-half__sets {
+  font-size: calc(
+    var(--md-sys-typescale-label-small-size) * var(--sets-scale, 1)
+  );
+  line-height: var(--md-sys-typescale-label-small-line);
+  font-weight: var(--md-sys-typescale-label-small-weight);
+  padding: calc(2px * var(--sets-scale, 1)) calc(8px * var(--sets-scale, 1));
+}

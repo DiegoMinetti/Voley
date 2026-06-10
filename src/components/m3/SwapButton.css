@@ -1,0 +1,258 @@
+/* ==========================================================================
+   Material Design 3 — Floating Swap Button
+   Apple "Liquid Glass" inspired translucent surface.
+
+   The button sits absolutely positioned over content (e.g. centered between
+   the two score halves). The icon is wrapped in an inline-flex span so a
+   rotate() transform never causes a reflow that would shift the button.
+   ========================================================================== */
+
+.md-swap-button {
+  /* Default neutral/translucent glass — overridden by variants. */
+  --_tint: color-mix(
+    in srgb,
+    var(--md-sys-color-surface-container-high) 65%,
+    transparent
+  );
+  --_tint-2: color-mix(
+    in srgb,
+    var(--md-sys-color-surface-container-highest) 35%,
+    transparent
+  );
+  --_highlight: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) 22%,
+    transparent
+  );
+  --_inner-shadow: color-mix(
+    in srgb,
+    var(--md-sys-color-shadow) 14%,
+    transparent
+  );
+  --_outer-shadow: color-mix(
+    in srgb,
+    var(--md-sys-color-shadow) 35%,
+    transparent
+  );
+  --_border: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) 18%,
+    transparent
+  );
+  --_on-tint: var(--md-sys-color-on-surface);
+  --_state: var(--md-sys-color-on-surface);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  padding: 0;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--_on-tint);
+  font-family: var(--md-sys-typescale-font);
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  isolation: isolate;
+  /* Pin the transform origin to the geometric center so the `:active`
+     scale never drifts the button off its own center. The default is
+     already `center`, but being explicit avoids surprises if a parent
+     or consumer sets a different origin on the element. */
+  transform-origin: center center;
+  /* Promote the button to its own compositor layer so the scale/rotate
+     animations are GPU-accelerated and don't trigger layout/paint of
+     siblings. */
+  will-change: transform;
+
+  /* Layered glass: subtle top-to-bottom gradient + soft diagonal tint. */
+  background:
+    linear-gradient(
+      160deg,
+      var(--_tint-2) 0%,
+      var(--_tint) 55%,
+      transparent 100%
+    );
+
+  /* Hairline glass border with a brighter top edge. */
+  border: 1px solid var(--_border);
+  border-top-color: var(--_highlight);
+
+  /* Inset specular highlight (top), inset ambient occlusion (bottom),
+     and a soft outer drop shadow. */
+  box-shadow:
+    inset 0 1px 1px var(--_highlight),
+    inset 0 -1px 2px var(--_inner-shadow),
+    0 1px 1px var(--_outer-shadow),
+    0 8px 24px var(--_outer-shadow);
+
+  /* Apple-style backdrop blur: blur + saturation boost so colors
+     underneath stay vivid through the glass. */
+  -webkit-backdrop-filter: blur(22px) saturate(180%);
+  backdrop-filter: blur(22px) saturate(180%);
+
+  transition:
+    background-color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard),
+    transform var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+}
+
+/* Extra specular sheen — a thin, soft top highlight that sells the
+   "wet glass" look. Sits above the background, under the icon. */
+.md-swap-button::after {
+  content: '';
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 45%;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: linear-gradient(
+    180deg,
+    var(--_highlight) 0%,
+    transparent 100%
+  );
+  pointer-events: none;
+  opacity: 0.6;
+  z-index: 0;
+}
+
+/* State layer — M3 uses an overlay colored with on-container. */
+.md-swap-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_state);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short2)
+    var(--md-sys-motion-easing-standard);
+  z-index: 1;
+}
+
+.md-swap-button:hover {
+  box-shadow:
+    inset 0 1px 1px var(--_highlight),
+    inset 0 -1px 2px var(--_inner-shadow),
+    0 1px 1px var(--_outer-shadow),
+    0 10px 28px var(--_outer-shadow);
+}
+
+.md-swap-button:hover::before {
+  opacity: var(--md-sys-state-hover);
+}
+.md-swap-button:focus-visible {
+  outline: none;
+}
+.md-swap-button:focus-visible::before {
+  opacity: var(--md-sys-state-focus);
+}
+.md-swap-button:active {
+  transform: scale(0.94);
+}
+.md-swap-button:active::before {
+  opacity: var(--md-sys-state-pressed);
+  transition-duration: 0ms;
+}
+
+.md-swap-button:disabled,
+.md-swap-button[aria-disabled='true'] {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Icon wrapper — inline-flex with explicit dimensions so the rotation
+   transform pivots on the geometric center and never causes the parent
+   to shift position (which is what an inline <span> with a rotate()
+   can do in some engines). */
+.md-swap-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  z-index: 2;
+  transform-origin: center center;
+  transition: transform var(--md-sys-motion-duration-medium2)
+    var(--md-sys-motion-easing-emphasized);
+}
+
+.md-swap-button:active .md-swap-button__icon {
+  transform: rotate(180deg);
+}
+
+.md-swap-button .material-symbols-rounded {
+  font-size: 26px;
+  line-height: 1;
+  display: inline-block;
+  transform: translateZ(0); /* keep the glyph crisp while parent rotates */
+}
+
+/* ----- Variants ----- */
+
+/* Primary — tints the glass with primary color and uses on-primary-container
+   as the foreground so the icon stays readable. */
+.md-swap-button--primary {
+  --_tint: color-mix(
+    in srgb,
+    var(--md-sys-color-primary-container) 70%,
+    transparent
+  );
+  --_tint-2: color-mix(
+    in srgb,
+    var(--md-sys-color-primary-container) 45%,
+    transparent
+  );
+  --_highlight: color-mix(
+    in srgb,
+    var(--md-sys-color-on-primary-container) 30%,
+    transparent
+  );
+  --_border: color-mix(
+    in srgb,
+    var(--md-sys-color-primary) 30%,
+    transparent
+  );
+  --_on-tint: var(--md-sys-color-on-primary-container);
+  --_state: var(--md-sys-color-on-primary-container);
+}
+
+/* Neutral — uses the surface tint, foreground stays on-surface. */
+.md-swap-button--neutral {
+  --_tint: color-mix(
+    in srgb,
+    var(--md-sys-color-surface-container-high) 65%,
+    transparent
+  );
+  --_tint-2: color-mix(
+    in srgb,
+    var(--md-sys-color-surface-container-highest) 35%,
+    transparent
+  );
+  --_on-tint: var(--md-sys-color-on-surface);
+  --_state: var(--md-sys-color-on-surface);
+}
+
+/* ----- Sizes ----- */
+
+.md-swap-button--small {
+  width: 40px;
+  height: 40px;
+}
+.md-swap-button--small .material-symbols-rounded {
+  font-size: 20px;
+}
+
+.md-swap-button--large {
+  width: 72px;
+  height: 72px;
+}
+.md-swap-button--large .material-symbols-rounded {
+  font-size: 32px;
+}

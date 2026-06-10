@@ -1,0 +1,278 @@
+/* ==========================================================================
+   MatchScreen — live scoreboard view
+   ========================================================================== */
+
+.match-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100svh;
+  background: var(--md-sys-color-background);
+  color: var(--md-sys-color-on-background);
+}
+
+/* Clock shown in the headline slot of the TopAppBar. */
+.match-screen__clock {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+.match-screen__clock-time {
+  font-size: var(--md-sys-typescale-title-large-size);
+  line-height: var(--md-sys-typescale-title-large-line);
+  font-weight: var(--md-sys-typescale-title-large-weight);
+  letter-spacing: var(--md-sys-typescale-title-large-tracking);
+  font-variant-numeric: tabular-nums;
+  color: var(--md-sys-color-on-surface);
+}
+
+.match-screen__clock-dot {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line);
+  color: var(--md-sys-color-on-surface-variant);
+  font-weight: var(--md-sys-typescale-body-medium-weight);
+  letter-spacing: var(--md-sys-typescale-body-medium-tracking);
+}
+
+.match-screen__score {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  flex: 1;
+  padding: 6px;
+  gap: 6px;
+}
+
+@media (max-width: 480px) {
+  .match-screen__score {
+    padding: 4px;
+    gap: 4px;
+  }
+}
+
+/* Floating swap button — sits exactly between the two score halves.
+   The score container is a flex row, so its center is at 50% / 50%.
+
+   Centering is done with `inset: 0; margin: auto` (NOT with
+   `transform: translate(-50%, -50%)`) so that any `transform` applied
+   to the button itself (e.g. the `:active` scale, the icon rotation)
+   can never overwrite the centering translate and cause the button
+   to jump out of place. The button keeps a fixed size, so `margin:
+   auto` perfectly centers it inside the absolutely positioned box. */
+.match-screen__swap-fab {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  z-index: 5;
+  pointer-events: auto;
+}
+
+.match-screen--compact .match-screen__swap-fab {
+  /* On compact landscape phones the halves are smaller; keep the button
+     proportionally sized. The translate is unnecessary here because
+     the button is already centered by `inset: 0; margin: auto`. */
+  transform: scale(0.82);
+  transform-origin: center center;
+}
+
+.match-screen__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 6px 12px 10px;
+  background: var(--md-sys-color-surface-container-low);
+  border-top: 1px solid var(--md-sys-color-surface-variant);
+}
+
+.match-screen__control-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  line-height: var(--md-sys-typescale-label-medium-line);
+  font-weight: var(--md-sys-typescale-label-medium-weight);
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+}
+
+.match-screen__control-group .material-symbols-rounded {
+  font-size: 16px;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* ==========================================================================
+   History modal
+   ========================================================================== */
+
+.match-screen__history-modal {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: min(520px, 100%);
+  max-height: min(60svh, 480px);
+  text-align: left;
+}
+
+.match-screen__history-hint {
+  margin: 0;
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: var(--md-sys-typescale-body-small-line);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.match-screen__history-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  overflow-y: auto;
+  max-height: min(50svh, 400px);
+  border: 1px solid var(--md-sys-color-surface-variant);
+  border-radius: var(--md-sys-shape-corner-medium);
+  background: var(--md-sys-color-surface-container-lowest);
+}
+
+.match-screen__history-item {
+  display: block;
+}
+
+.match-screen__history-item + .match-screen__history-item {
+  border-top: 1px solid var(--md-sys-color-surface-variant);
+}
+
+.match-screen__history-item--undone .match-screen__history-button {
+  color: var(--md-sys-color-on-surface-variant);
+  background: transparent;
+}
+
+.match-screen__history-item--undone .match-screen__history-icon {
+  color: var(--md-sys-color-outline);
+}
+
+.match-screen__history-item--boundary {
+  position: relative;
+}
+
+.match-screen__history-item--boundary::before {
+  content: 'Punto actual';
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: var(--md-sys-typescale-label-small-weight);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+  z-index: 1;
+}
+
+.match-screen__history-item--boundary .match-screen__history-button {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.match-screen__history-item--boundary .match-screen__history-icon {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.match-screen__history-button {
+  appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: transparent;
+  border: 0;
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.match-screen__history-button:hover,
+.match-screen__history-button:focus-visible {
+  background: var(--md-sys-color-surface-container-high);
+  outline: none;
+}
+
+.match-screen__history-button:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+}
+
+.match-screen__history-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  flex-shrink: 0;
+}
+
+.match-screen__history-icon .material-symbols-rounded {
+  font-size: 18px;
+}
+
+.match-screen__history-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.match-screen__history-index {
+  font-size: var(--md-sys-typescale-label-small-size);
+  line-height: var(--md-sys-typescale-label-small-line);
+  color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+}
+
+.match-screen__history-label {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line);
+  font-weight: var(--md-sys-typescale-body-medium-weight);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.match-screen__history-time {
+  font-size: var(--md-sys-typescale-label-small-size);
+  line-height: var(--md-sys-typescale-label-small-line);
+  color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.match-screen__history-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  color: var(--md-sys-color-on-surface-variant);
+  text-align: center;
+}
+
+.match-screen__history-empty .material-symbols-rounded {
+  font-size: 36px;
+  color: var(--md-sys-color-outline);
+}

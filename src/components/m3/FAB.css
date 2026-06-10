@@ -1,0 +1,133 @@
+/* ==========================================================================
+   Material Design 3 — FAB (Floating Action Button)
+   Reference: https://m3.material.io/components/extended-fab/overview
+   ========================================================================== */
+
+.md-fab {
+  --_container-color: var(--md-sys-color-primary-container);
+  --_label-color: var(--md-sys-color-on-primary-container);
+  --_state-color: var(--md-sys-color-on-primary-container);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 56px;
+  min-width: 56px;
+  padding: 0 20px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-large);
+  background-color: var(--_container-color);
+  color: var(--_label-color);
+  font-family: var(--md-sys-typescale-font);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  line-height: var(--md-sys-typescale-label-large-line);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  cursor: pointer;
+  user-select: none;
+  box-shadow: var(--md-sys-elevation-level3);
+  transition:
+    background-color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-fab::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_state-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short2)
+    var(--md-sys-motion-easing-standard);
+}
+
+.md-fab:hover::before {
+  opacity: var(--md-sys-state-hover);
+}
+.md-fab:focus-visible::before {
+  opacity: var(--md-sys-state-focus);
+}
+.md-fab:active::before {
+  opacity: var(--md-sys-state-pressed);
+}
+.md-fab:hover {
+  box-shadow: var(--md-sys-elevation-level4);
+}
+
+.md-fab:disabled,
+.md-fab[aria-disabled='true'] {
+  background-color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) 12%,
+    transparent
+  );
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  cursor: not-allowed;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.md-fab--small {
+  height: 40px;
+  min-width: 40px;
+  padding: 0 12px;
+}
+.md-fab--small .material-symbols-rounded {
+  font-size: 20px;
+}
+
+.md-fab--large {
+  height: 96px;
+  min-width: 96px;
+  padding: 0 28px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  flex-direction: column;
+  gap: 4px;
+}
+.md-fab--large .material-symbols-rounded {
+  font-size: 28px;
+}
+.md-fab--large {
+  font-size: var(--md-sys-typescale-title-medium-size);
+  line-height: var(--md-sys-typescale-title-medium-line);
+}
+
+.md-fab--icon-only {
+  padding: 0;
+  width: 56px;
+}
+.md-fab--icon-only.md-fab--small {
+  width: 40px;
+}
+.md-fab--icon-only.md-fab--large {
+  width: 96px;
+}
+
+.md-fab--tonal {
+  --_container-color: var(--md-sys-color-secondary-container);
+  --_label-color: var(--md-sys-color-on-secondary-container);
+  --_state-color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-fab--primary {
+  --_container-color: var(--md-sys-color-primary);
+  --_label-color: var(--md-sys-color-on-primary);
+  --_state-color: var(--md-sys-color-on-primary);
+}
+
+.md-fab--surface {
+  --_container-color: var(--md-sys-color-surface-container-high);
+  --_label-color: var(--md-sys-color-primary);
+  --_state-color: var(--md-sys-color-primary);
+}
+
+.md-fab .material-symbols-rounded {
+  font-size: 24px;
+}

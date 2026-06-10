@@ -16,7 +16,12 @@ export interface MatchConfig {
   vibration: boolean
   confirmFinish: boolean
   showClock: boolean
-  showLiveHistory: boolean
+  /**
+   * Whether to show the in-match timeout controls (Timeout A / Timeout B
+   * buttons). Optional for backwards compatibility with matches stored
+   * before the setting was introduced; missing values default to `false`.
+   */
+  showTimeoutButtons?: boolean
 }
 
 export interface UserSettings {
@@ -25,7 +30,33 @@ export interface UserSettings {
   tapToAdd: boolean
   confirmFinish: boolean
   showClock: boolean
-  showLiveHistory: boolean
+  /**
+   * Whether to show the in-match timeout controls (Timeout A / Timeout B
+   * buttons). Optional for backwards compatibility with stored settings
+   * from older app versions; missing values default to `false`.
+   */
+  showTimeoutButtons?: boolean
+  /**
+   * Multiplier applied to the points number on the scoreboard half.
+   * Range: 0.5 - 2.0. Defaults to 1.
+   */
+  pointsScale?: number
+  /**
+   * Multiplier applied to the team name on the scoreboard half.
+   * Range: 0.5 - 2.0. Defaults to 1.
+   */
+  teamNameScale?: number
+  /**
+   * Multiplier applied to the sets pill on the scoreboard half.
+   * Range: 0.5 - 2.0. Defaults to 1.
+   */
+  setsScale?: number
+  /**
+   * Multiplier applied on top of the three specific scales (points/team/sets).
+   * Lets the user enlarge or shrink the whole scoreboard text in one move.
+   * Range: 0.5 - 2.0. Defaults to 1.
+   */
+  globalScale?: number
 }
 
 export type MatchEvent =

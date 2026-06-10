@@ -1,0 +1,197 @@
+/* ==========================================================================
+   Material Design 3 — Button
+   Reference: https://m3.material.io/components/buttons/overview
+   ========================================================================== */
+
+.md-button {
+  --_container-color: var(--md-sys-color-primary);
+  --_label-color: var(--md-sys-color-on-primary);
+  --_state-color: var(--md-sys-color-on-primary);
+  --_shape: var(--md-sys-shape-corner-full);
+  --_height: 40px;
+  --_padding-h: 24px;
+  --_leading-space: 12px;
+  --_trailing-space: 16px;
+  --_icon-size: 18px;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: var(--_height);
+  padding: 0 var(--_padding-h);
+  border: none;
+  border-radius: var(--_shape);
+  background-color: var(--_container-color);
+  color: var(--_label-color);
+  font-family: var(--md-sys-typescale-font);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-label-large-weight);
+  line-height: var(--md-sys-typescale-label-large-line);
+  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  text-decoration: none;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition:
+    background-color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.md-button::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background-color: var(--_state-color);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--md-sys-motion-duration-short2)
+    var(--md-sys-motion-easing-standard);
+}
+
+.md-button:hover::before {
+  opacity: var(--md-sys-state-hover);
+}
+.md-button:focus-visible::before {
+  opacity: var(--md-sys-state-focus);
+}
+.md-button:active::before {
+  opacity: var(--md-sys-state-pressed);
+}
+
+.md-button:disabled,
+.md-button[aria-disabled='true'] {
+  background-color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) 12%,
+    transparent
+  );
+  color: color-mix(in srgb, var(--md-sys-color-on-surface) 38%, transparent);
+  cursor: not-allowed;
+  box-shadow: none;
+  pointer-events: none;
+}
+
+.md-button__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--_icon-size);
+  line-height: 1;
+}
+.md-button__icon--leading {
+  margin-inline-start: calc(-1 * var(--_leading-space));
+}
+.md-button__icon--trailing {
+  margin-inline-end: calc(-1 * var(--_trailing-space));
+}
+
+/* Variants */
+.md-button--filled {
+  --_container-color: var(--md-sys-color-primary);
+  --_label-color: var(--md-sys-color-on-primary);
+  --_state-color: var(--md-sys-color-on-primary);
+  box-shadow: none;
+}
+.md-button--elevated {
+  --_container-color: var(--md-sys-color-surface-container-low);
+  --_label-color: var(--md-sys-color-primary);
+  --_state-color: var(--md-sys-color-primary);
+  box-shadow: var(--md-sys-elevation-level1);
+}
+.md-button--elevated:hover {
+  box-shadow: var(--md-sys-elevation-level2);
+}
+
+.md-button--tonal {
+  --_container-color: var(--md-sys-color-secondary-container);
+  --_label-color: var(--md-sys-color-on-secondary-container);
+  --_state-color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-button--outlined {
+  --_container-color: transparent;
+  --_label-color: var(--md-sys-color-primary);
+  --_state-color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline);
+  padding: 0 calc(var(--_padding-h) - 1px);
+}
+.md-button--outlined:disabled,
+.md-button--outlined[aria-disabled='true'] {
+  border-color: color-mix(
+    in srgb,
+    var(--md-sys-color-on-surface) 12%,
+    transparent
+  );
+}
+
+.md-button--text {
+  --_container-color: transparent;
+  --_label-color: var(--md-sys-color-primary);
+  --_state-color: var(--md-sys-color-primary);
+  --_padding-h: 12px;
+  --_leading-space: 8px;
+  --_trailing-space: 8px;
+}
+
+.md-button--error {
+  --_container-color: var(--md-sys-color-error);
+  --_label-color: var(--md-sys-color-on-error);
+  --_state-color: var(--md-sys-color-on-error);
+}
+.md-button--text.md-button--error {
+  --_container-color: transparent;
+  --_label-color: var(--md-sys-color-error);
+  --_state-color: var(--md-sys-color-error);
+}
+.md-button--outlined.md-button--error {
+  --_container-color: transparent;
+  --_label-color: var(--md-sys-color-error);
+  --_state-color: var(--md-sys-color-error);
+}
+
+.md-button--small {
+  --_height: 32px;
+  --_padding-h: 16px;
+  --_leading-space: 8px;
+  --_trailing-space: 8px;
+  --_icon-size: 16px;
+  font-size: var(--md-sys-typescale-label-medium-size);
+}
+.md-button--large {
+  --_height: 56px;
+  --_padding-h: 32px;
+  --_leading-space: 16px;
+  --_trailing-space: 16px;
+  --_icon-size: 20px;
+}
+
+.md-button--full-width {
+  width: 100%;
+}
+
+.md-button--icon-only {
+  --_padding-h: 0;
+  --_leading-space: 0;
+  --_trailing-space: 0;
+  width: var(--_height);
+  min-width: var(--_height);
+  padding: 0;
+}
+
+/* ==========================================================================
+   IconButton specific (toggled / selected)
+   ========================================================================== */
+.md-icon-button {
+  --_state-color: var(--md-sys-color-on-surface-variant);
+}
+.md-icon-button--selected {
+  --_container-color: var(--md-sys-color-primary);
+  --_label-color: var(--md-sys-color-on-primary);
+  --_state-color: var(--md-sys-color-on-primary);
+}
