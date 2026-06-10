@@ -136,18 +136,11 @@ export const MatchScreen = ({
   const [sizeDialogOpen, setSizeDialogOpen] = useState(false)
   const [teamDialogOpen, setTeamDialogOpen] = useState(false)
   const [winnerOverlayOpen, setWinnerOverlayOpen] = useState(false)
-  // When true, the top app bar and the bottom controls are hidden so the
-  // two score halves fill the entire viewport — a focused "points-only"
-  // mode. A small floating button brings the chrome back.
+  // When true, the top app bar and the bottom controls are visible. When
+  // false, they are collapsed to 0 height so the two score halves absorb
+  // the entire viewport — a focused "points-only" mode. The edge handle
+  // (chevron pill straddling the top of the score area) toggles the state.
   const [chromeVisible, setChromeVisible] = useState(true)
-
-  // Drag state for the chrome toggle pill. `toggleDragOffset` is the live
-  // vertical travel (px) the user is pulling the handle; `isToggleDragging`
-  // disables the CSS transition so the pill follows 1:1 with the finger.
-  const [toggleDragOffset, setToggleDragOffset] = useState(0)
-  const [isToggleDragging, setIsToggleDragging] = useState(false)
-  const togglePointerDownRef = useRef(false)
-  const toggleStartYRef = useRef<number | null>(null)
 
   const historyListRef = useRef<HTMLOListElement>(null)
 
@@ -253,99 +246,13 @@ export const MatchScreen = ({
     globalScale,
   }
 
-  /* ===== Chrome-toggle drag tunables =======================================
-   * DRAG_THRESHOLD: minimum vertical travel (px) required to commit to a
-   *                 hide/show action via drag.
-   * TAP_THRESHOLD : maximum travel (px) that still counts as a plain tap.
-   *                 Below this we toggle the state without changing the
-   *                 pill position.
-   * ====================================================================== */
-  const CHROME_TOGGLE_DRAG_THRESHOLD = 40
-  const CHROME_TOGGLE_TAP_THRESHOLD = 8
-
-  const handleTogglePointerDown = (
-    event: React.PointerEvent<HTMLButtonElement>,
-  ): void => {
-    togglePointerDownRef.current = true
-    toggleStartYRef.current = event.clientY
-    setIsToggleDragging(true)
-    setToggleDragOffset(0)
-    try {
-      event.currentTarget.setPointerCapture(event.pointerId)
-    } catch {
-      /* setPointerCapture not supported — fine, pointer events still
-         work inside the button. */
-    }
+  // Toggle the chrome visibility. The pill itself never moves; tapping it
+  // simply expands or collapses the top bar / bottom controls. Position,
+  // size and chevron orientation are driven entirely by CSS in response
+  // to the `match-screen--chrome-hidden` class on the parent.
+  const handleChromeToggle = (): void => {
+    setChromeVisible((current) => !current)
   }
-
-  const handleTogglePointerMove = (
-    event: React.PointerEvent<HTMLButtonElement>,
-  ): void => {
-    if (!togglePointerDownRef.current || toggleStartYRef.current === null) return
-    const deltaY = event.clientY - toggleStartYRef.current
-    setToggleDragOffset(deltaY)
-  }
-
-  const handleTogglePointerUp = (
-    event: React.PointerEvent<HTMLButtonElement>,
-  ): void => {
-    if (!togglePointerDownRef.current) return
-    togglePointerDownRef.current = false
-    setIsToggleDragging(false)
-    const deltaY = event.clientY - (toggleStartYRef.current ?? event.clientY)
-    toggleStartYRef.current = null
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    } catch {
-      /* no-op */
-    }
-    // Plain tap (no meaningful travel) → just flip the state.
-    if (Math.abs(deltaY) < CHROME_TOGGLE_TAP_THRESHOLD) {
-      setToggleDragOffset(0)
-      setChromeVisible((current) => !current)
-      return
-    }
-    // Drag up past the threshold → hide the chrome.
-    if (deltaY < -CHROME_TOGGLE_DRAG_THRESHOLD && chromeVisible) {
-      setToggleDragOffset(0)
-      setChromeVisible(false)
-      return
-    }
-    // Drag down past the threshold → show the chrome.
-    if (deltaY > CHROME_TOGGLE_DRAG_THRESHOLD && !chromeVisible) {
-      setToggleDragOffset(0)
-      setChromeVisible(true)
-      return
-    }
-    // Drag didn't commit → spring back to resting position.
-    setToggleDragOffset(0)
-  }
-
-  const handleTogglePointerCancel = (
-    event: React.PointerEvent<HTMLButtonElement>,
-  ): void => {
-    togglePointerDownRef.current = false
-    toggleStartYRef.current = null
-    setIsToggleDragging(false)
-    setToggleDragOffset(0)
-    try {
-      event.currentTarget.releasePointerCapture(event.pointerId)
-    } catch {
-      /* no-op */
-    }
-  }
-
-  // Inline style for the drag offset. The base `transform: translate(-50%, 0)`
-  // in CSS is overridden here during a drag so the pill follows the finger
-  // 1:1; when the gesture ends the offset snaps back to 0 via the CSS
-  // transition (or instantly if the state is being toggled).
-  const toggleStyle: React.CSSProperties = isToggleDragging
-    ? { transform: `translate(calc(-50% + 0px), ${toggleDragOffset}px)` }
-    : { transform: 'translate(-50%, 0)' }
-
-  const toggleClassName =
-    'match-screen__chrome-toggle' +
-    (isToggleDragging ? ' match-screen__chrome-toggle--dragging' : '')
 
   return (
     <div
@@ -486,23 +393,6 @@ export const MatchScreen = ({
             onPushEvent({ timestamp: Date.now(), type: 'SIDE_SWAP' })
           }
         />
-        <button
-          type="button"
-          className={toggleClassName}
-          style={toggleStyle}
-          onPointerDown={handleTogglePointerDown}
-          onPointerMove={handleTogglePointerMove}
-          onPointerUp={handleTogglePointerUp}
-          onPointerCancel={handleTogglePointerCancel}
-          aria-label={
-            chromeVisible
-              ? 'Ocultar barra superior y controles (arrastra hacia arriba o toca)'
-              : 'Mostrar barra superior y controles (arrastra hacia abajo o toca)'
-          }
-          aria-expanded={chromeVisible}
-        >
-          <Icon name="expand_less" />
-        </button>
       </div>
 
       {match.config.showTimeoutButtons && (
@@ -539,6 +429,21 @@ export const MatchScreen = ({
           </Button>
         </div>
       )}
+
+      <button
+        type="button"
+        className="match-screen__chrome-toggle"
+        onClick={handleChromeToggle}
+        aria-label={
+          chromeVisible
+            ? 'Ocultar barra superior y controles'
+            : 'Mostrar barra superior y controles'
+        }
+        aria-expanded={chromeVisible}
+        title={chromeVisible ? 'Ocultar' : 'Mostrar'}
+      >
+        <Icon name="expand_less" />
+      </button>
 
       <Dialog
         open={Boolean(setModal)}

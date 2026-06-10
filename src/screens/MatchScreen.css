@@ -7,10 +7,13 @@
   flex-direction: column;
   /* Lock the screen to the viewport (with dvh fallback for mobile address
      bars). We intentionally use a fixed height + overflow:hidden so the
-     score view never scrolls — the two halves absorb the whole viewport. */
+     score view never scrolls — the two halves absorb the whole viewport.
+     `position: relative` makes this the positioning context for the
+     floating chrome toggle, which sits on top of the TopAppBar. */
   height: 100svh;
   height: 100dvh;
   overflow: hidden;
+  position: relative;
   background: var(--md-sys-color-background);
   color: var(--md-sys-color-on-background);
 }
@@ -50,20 +53,33 @@
   border-top-color: transparent;
 }
 
-/* Floating draggable toggle. Lives at the top of the score area (which is
-   the only "always visible" surface once the chrome is collapsed).
-   - Chrome visible  : pill with chevron-up → indicates "drag up / tap to hide".
-   - Chrome hidden   : pill with chevron-down → indicates "drag down / tap to show". */
+/* Floating chevron pill that toggles the top bar / bottom controls.
+   Lives directly on the `.match-screen` container (which is
+   `position: relative`) so we can anchor it to the viewport's top edge
+   independent of the TopAppBar's height.
+
+   • Chrome visible  : the handle sits at `top: 6px`, floating *over*
+                       the TopAppBar (z-index above the bar) so it's
+                       always reachable. Because it's centered, it
+                       doesn't collide with the leading back button or
+                       the trailing action icons.
+   • Chrome hidden   : the handle stays at the top of the viewport, but
+                       shrinks to a tiny semi-transparent hint so it
+                       never competes with the score numbers.
+
+   The handle is intentionally small (44×20 → 32×14) so it reads as a
+   notch, not a FAB. */
 .match-screen__chrome-toggle {
   position: absolute;
-  top: 8px;
+  top: 6px;
   left: 50%;
-  z-index: 7;
+  /* Must beat the .md-top-app-bar z-index (10) so the pill stays reachable when the chrome is visible. */
+  z-index: 20;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 56px;
-  height: 28px;
+  width: 44px;
+  height: 20px;
   padding: 0;
   border: none;
   border-radius: var(--md-sys-shape-corner-full);
@@ -71,27 +87,26 @@
   color: var(--md-sys-color-on-surface);
   box-shadow:
     0 1px 2px rgba(0, 0, 0, 0.18),
-    0 2px 6px rgba(0, 0, 0, 0.08);
-  cursor: grab;
+    0 1px 3px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
   user-select: none;
   -webkit-tap-highlight-color: transparent;
-  touch-action: none;
-  /* Default state: sitting at the top, slight idle lift so it reads as a
-     draggable handle. We translate(-50%, 0) so horizontal centering is
-     unaffected by any vertical drag offset. */
+  touch-action: manipulation;
   transform: translate(-50%, 0);
   transition:
     top var(--md-sys-motion-duration-medium3)
       var(--md-sys-motion-easing-emphasized),
-    background-color var(--md-sys-motion-duration-short2)
-      var(--md-sys-motion-easing-standard);
+    width var(--md-sys-motion-duration-medium3)
+      var(--md-sys-motion-easing-emphasized),
+    height var(--md-sys-motion-duration-medium3)
+      var(--md-sys-motion-easing-emphasized),
+    background-color var(--md-sys-motion-duration-medium2)
+      var(--md-sys-motion-easing-emphasized),
+    opacity var(--md-sys-motion-duration-medium2)
+      var(--md-sys-motion-easing-emphasized);
 }
 
 .match-screen__chrome-toggle:hover {
-  background: var(--md-sys-color-surface-container-highest);
-}
-
-.match-screen__chrome-toggle:active {
   background: var(--md-sys-color-surface-container-highest);
 }
 
@@ -100,42 +115,48 @@
   outline-offset: 2px;
 }
 
-/* While the user is actively dragging we want 1:1 tracking with the finger
-   and no spring-back easing. */
-.match-screen__chrome-toggle--dragging {
-  cursor: grabbing;
-  transition: none;
+/* When the chrome is hidden the handle becomes a near-invisible hint:
+   much smaller and semi-transparent. The chevron still rotates to
+   point down, telling the user it can be expanded. */
+.match-screen--chrome-hidden .match-screen__chrome-toggle {
+  top: 8px;
+  width: 32px;
+  height: 14px;
+  opacity: 0.45;
+  box-shadow: none;
 }
 
-/* When the chrome is hidden the top bar is 0px tall, so the toggle sits
-   flush against the top edge of the score area. Same `top: 8px` works in
-   both states — the only thing that changes is the surrounding layout. */
-.match-screen--chrome-hidden .match-screen__chrome-toggle {
-  /* nudge it down just a touch so it doesn't touch the status-bar area */
-  top: 10px;
+.match-screen--chrome-hidden .match-screen__chrome-toggle:hover {
+  opacity: 0.9;
 }
 
 .match-screen__chrome-toggle .material-symbols-rounded {
-  font-size: 22px;
+  font-size: 16px;
   line-height: 1;
-  transition: transform var(--md-sys-motion-duration-medium2)
-    var(--md-sys-motion-easing-emphasized);
+  transition:
+    transform var(--md-sys-motion-duration-medium2)
+      var(--md-sys-motion-easing-emphasized),
+    font-size var(--md-sys-motion-duration-medium2)
+      var(--md-sys-motion-easing-emphasized);
 }
 
 /* Chevron flips 180° when toggling state, so the icon itself rotates
    instead of just swapping glyphs. */
 .match-screen--chrome-hidden .match-screen__chrome-toggle .material-symbols-rounded {
   transform: rotate(180deg);
+  font-size: 14px;
 }
 
 @media (max-width: 480px) {
   .match-screen__chrome-toggle {
-    top: 6px;
-    width: 52px;
-    height: 26px;
+    width: 40px;
+    height: 18px;
+    top: 4px;
   }
   .match-screen--chrome-hidden .match-screen__chrome-toggle {
-    top: 8px;
+    top: 6px;
+    width: 28px;
+    height: 12px;
   }
 }
 
