@@ -102,24 +102,22 @@ export const NewMatchScreen = ({
             ]}
           />
 
-          <div className="form-screen__row">
-            <TextField
-              label="Puntos por set"
-              type="number"
-              min={1}
-              value={config.pointsPerSet}
-              onChange={(event) => setNumber('pointsPerSet', Number(event.target.value) || 1)}
-              leadingIcon="scoreboard"
-            />
-            <TextField
-              label="Diferencia minima"
-              type="number"
-              min={1}
-              value={config.minDifference}
-              onChange={(event) => setNumber('minDifference', Number(event.target.value) || 1)}
-              leadingIcon="compare_arrows"
-            />
-          </div>
+          <TextField
+            label="Puntos por set"
+            type="number"
+            min={1}
+            value={config.pointsPerSet}
+            onChange={(event) => setNumber('pointsPerSet', Number(event.target.value) || 1)}
+            leadingIcon="scoreboard"
+          />
+          <TextField
+            label="Diferencia minima"
+            type="number"
+            min={1}
+            value={config.minDifference}
+            onChange={(event) => setNumber('minDifference', Number(event.target.value) || 1)}
+            leadingIcon="compare_arrows"
+          />
           <TextField
             label="Puntos del set decisivo (tie-break)"
             type="number"
