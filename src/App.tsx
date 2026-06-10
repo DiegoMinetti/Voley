@@ -6,7 +6,7 @@ import {
   triggerDownload,
 } from './features/export/formatters'
 import { projectMatch } from './features/scoring/projector'
-import { defaultMatchConfig, defaultUserSettings } from './storage/defaults'
+import { defaultMatchConfig, defaultTeamA, defaultTeamB, defaultUserSettings } from './storage/defaults'
 import {
   getActiveMatchId,
   getMatch,
@@ -30,12 +30,13 @@ import { HomeScreen } from './screens/HomeScreen'
 import { MatchScreen } from './screens/MatchScreen'
 import { NewMatchScreen } from './screens/NewMatchScreen'
 import { SettingsScreen } from './screens/SettingsScreen'
+import type { SizeScaleValues } from './components/SizeSettingsDialog'
 
 type Screen = 'home' | 'new' | 'match' | 'history' | 'settings'
 
 const initialTeams: Record<TeamSide, TeamConfig> = {
-  A: { name: 'Equipo A', color: '#0f5ea8' },
-  B: { name: 'Equipo B', color: '#bf3f34' },
+  A: { ...defaultTeamA },
+  B: { ...defaultTeamB },
 }
 
 const createMatch = (
@@ -55,6 +56,17 @@ const createMatch = (
     cursor: 0,
   }
 }
+
+/**
+ * Pull the team defaults out of `UserSettings`, falling back to the global
+ * defaults when older settings payloads don't include the new fields.
+ */
+const resolveDefaultTeams = (
+  settings: UserSettings,
+): Record<TeamSide, TeamConfig> => ({
+  A: { ...(settings.defaultTeamA ?? defaultTeamA) },
+  B: { ...(settings.defaultTeamB ?? defaultTeamB) },
+})
 
 function App() {
   const [screen, setScreen] = useState<Screen>('home')
@@ -80,6 +92,7 @@ function App() {
     redo,
     jumpTo,
     finalize,
+    updateTeams,
   } = useMatchReducer(null, {
     vibration: settings.vibration,
   })
@@ -111,7 +124,8 @@ function App() {
 
       if (savedSettings) {
         // Merge with defaults so settings stored by older versions of the
-        // app (e.g. without `showTimeoutButtons`) still get sensible values.
+        // app (e.g. without `showTimeoutButtons` or `defaultTeamA`/`B`) still
+        // get sensible values.
         setSettings({ ...defaultUserSettings, ...savedSettings })
       }
 
@@ -272,6 +286,30 @@ function App() {
     setScreen('home')
   }, [activeMatch])
 
+  // Persists size changes triggered from the live scoreboard dialog. Using
+  // a dedicated callback keeps the match screen free of `UserSettings` concerns
+  // and ensures the new values land in the same store as the rest of the app.
+  const handleScalesChange = useCallback((next: SizeScaleValues): void => {
+    setSettings((prev) => ({ ...prev, ...next }))
+  }, [])
+
+  // Apply team name / color changes that the user made from the live
+  // scoreboard. We forward the new pair to the reducer (which owns the
+  // match record) so the change is persisted to storage on the next sync.
+  const handleTeamsChange = useCallback(
+    (next: Record<TeamSide, TeamConfig>): void => {
+      updateTeams(next)
+    },
+    [updateTeams],
+  )
+
+  // Reset the "new match" team form to the latest saved defaults and jump to
+  // the new-match screen. Tied to the HomeScreen action button.
+  const handleStartNew = useCallback((): void => {
+    setNewMatchTeams(resolveDefaultTeams(settings))
+    setScreen('new')
+  }, [settings])
+
   if (!ready) {
     return (
       <div
@@ -309,10 +347,13 @@ function App() {
         projection={projection}
         isDark={settings.darkMode}
         showClock={settings.showClock}
+        showTimerControls={settings.showTimerControls ?? false}
         pointsScale={settings.pointsScale ?? 1}
         teamNameScale={settings.teamNameScale ?? 1}
         setsScale={settings.setsScale ?? 1}
         globalScale={settings.globalScale ?? 1}
+        onScalesChange={handleScalesChange}
+        onTeamsChange={handleTeamsChange}
         setModal={setModal}
         onDismissSetModal={() => setSetModal(null)}
         onAddPoint={addPoint}
@@ -355,6 +396,7 @@ function App() {
             confirmFinish: next.confirmFinish,
             showClock: next.showClock,
             showTimeoutButtons: next.showTimeoutButtons,
+            showTimerControls: next.showTimerControls,
           }))
         }}
         onBack={() => setScreen('home')}
@@ -367,7 +409,7 @@ function App() {
       hasInProgress={Boolean(inProgressMatch)}
       inProgressMatch={inProgressMatch}
       statusMessage={statusMessage}
-      onStartNew={() => setScreen('new')}
+      onStartNew={handleStartNew}
       onContinueLast={() => void handleContinueLast()}
       onOpenHistory={() => setScreen('history')}
       onOpenSettings={() => setScreen('settings')}

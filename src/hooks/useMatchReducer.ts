@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useReducer } from 'react'
-import type { MatchEvent, MatchRecord, TeamSide } from '../types/models'
+import type {
+  MatchEvent,
+  MatchRecord,
+  TeamConfig,
+  TeamSide,
+} from '../types/models'
 
 export type MatchAction =
   | { type: 'SET'; record: MatchRecord }
@@ -8,6 +13,10 @@ export type MatchAction =
   | { type: 'REDO' }
   | { type: 'JUMP_TO'; cursor: number }
   | { type: 'FINALIZE' }
+  | {
+      type: 'UPDATE_TEAMS'
+      teams: Partial<Record<TeamSide, Partial<TeamConfig>>>
+    }
 
 const appendEvent = (record: MatchRecord, event: MatchEvent): MatchRecord => {
   const truncated = record.events.slice(0, record.cursor)
@@ -46,6 +55,14 @@ const reducer = (
     case 'FINALIZE': {
       return state ? { ...state, status: 'finished', updatedAt: Date.now() } : state
     }
+    case 'UPDATE_TEAMS': {
+      if (!state) return state
+      const nextTeams: Record<TeamSide, TeamConfig> = {
+        A: { ...state.teams.A, ...(action.teams.A ?? {}) },
+        B: { ...state.teams.B, ...(action.teams.B ?? {}) },
+      }
+      return { ...state, teams: nextTeams, updatedAt: Date.now() }
+    }
     default:
       return state
   }
@@ -63,6 +80,9 @@ export interface UseMatchReducerResult {
   jumpTo: (cursor: number) => void
   finalize: () => void
   clear: () => void
+  updateTeams: (
+    teams: Partial<Record<TeamSide, Partial<TeamConfig>>>,
+  ) => void
 }
 
 export const useMatchReducer = (
@@ -137,6 +157,13 @@ export const useMatchReducer = (
     /* no-op; reset handled by setMatch with null on caller side */
   }, [])
 
+  const updateTeams = useCallback(
+    (teams: Partial<Record<TeamSide, Partial<TeamConfig>>>) => {
+      dispatch({ type: 'UPDATE_TEAMS', teams })
+    },
+    [],
+  )
+
   return {
     match: state,
     setMatch,
@@ -149,5 +176,6 @@ export const useMatchReducer = (
     jumpTo,
     finalize,
     clear,
+    updateTeams,
   }
 }

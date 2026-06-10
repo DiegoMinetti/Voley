@@ -1,13 +1,18 @@
-import { useCallback } from 'react'
+import { useCallback, useState } from 'react'
 import { Button } from '../components/m3/Button'
+import { ColorPicker } from '../components/m3/ColorPicker'
 import { Divider } from '../components/m3/Divider'
 import { Icon } from '../components/m3/Icon'
 import { IconButton } from '../components/m3/IconButton'
 import { List, ListItem, ListItemDivider } from '../components/m3/ListItem'
 import { Slider } from '../components/m3/Slider'
 import { Switch } from '../components/m3/Switch'
+import { TextField } from '../components/m3/TextField'
 import { TopAppBar } from '../components/m3/TopAppBar'
-import type { UserSettings } from '../types/models'
+import { teamColorPalette } from '../features/teams/palette'
+import { defaultTeamA, defaultTeamB } from '../storage/defaults'
+import type { TeamConfig, TeamSide, UserSettings } from '../types/models'
+import { isValidHexColor } from '../utils/format'
 import './SettingsScreen.css'
 
 interface SettingsScreenProps {
@@ -26,6 +31,11 @@ const safeScale = (value: number | undefined, fallback = 1): number => {
   return Math.min(SCALE_MAX, Math.max(SCALE_MIN, value))
 }
 
+const safeTeam = (value: TeamConfig | undefined, fallback: TeamConfig): TeamConfig => ({
+  name: value?.name ?? fallback.name,
+  color: value?.color ?? fallback.color,
+})
+
 export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenProps) => {
   const set = <K extends keyof UserSettings>(key: K, value: UserSettings[K]) => {
     onChange({ ...settings, [key]: value })
@@ -36,6 +46,42 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
   const setsScale = safeScale(settings.setsScale)
   const globalScale = safeScale(settings.globalScale)
 
+  const teamA = safeTeam(settings.defaultTeamA, defaultTeamA)
+  const teamB = safeTeam(settings.defaultTeamB, defaultTeamB)
+
+  // Local mirror of the hex text field. Lets the user type partial values
+  // (e.g. "#0") without losing what they already have on the team object.
+  const [hexInputs, setHexInputs] = useState<Record<TeamSide, string>>({
+    A: teamA.color,
+    B: teamB.color,
+  })
+
+  const setDefaultTeamName = (side: TeamSide, name: string): void => {
+    const key = side === 'A' ? 'defaultTeamA' : 'defaultTeamB'
+    const current = side === 'A' ? teamA : teamB
+    set(key, { ...current, name })
+  }
+
+  const setDefaultTeamColor = (side: TeamSide, color: string): void => {
+    setHexInputs((prev) => ({ ...prev, [side]: color }))
+    if (isValidHexColor(color)) {
+      const key = side === 'A' ? 'defaultTeamA' : 'defaultTeamB'
+      const current = side === 'A' ? teamA : teamB
+      set(key, { ...current, color })
+    }
+  }
+
+  const commitHex = (side: TeamSide): void => {
+    const value = hexInputs[side].trim()
+    const key = side === 'A' ? 'defaultTeamA' : 'defaultTeamB'
+    const current = side === 'A' ? teamA : teamB
+    if (isValidHexColor(value)) {
+      set(key, { ...current, color: value })
+    } else {
+      setHexInputs((prev) => ({ ...prev, [side]: current.color }))
+    }
+  }
+
   const resetScales = useCallback(() => {
     onChange({
       ...settings,
@@ -44,6 +90,15 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
       setsScale: 1,
       globalScale: 1,
     })
+  }, [onChange, settings])
+
+  const resetTeams = useCallback(() => {
+    onChange({
+      ...settings,
+      defaultTeamA: { ...defaultTeamA },
+      defaultTeamB: { ...defaultTeamB },
+    })
+    setHexInputs({ A: defaultTeamA.color, B: defaultTeamB.color })
   }, [onChange, settings])
 
   return (
@@ -75,6 +130,98 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
             }
           />
         </List>
+      </div>
+
+      <div className="settings-screen__group">
+        <h2 className="settings-screen__group-header">
+          <Icon name="groups" />
+          Equipos por defecto
+        </h2>
+        <p className="settings-screen__group-hint">
+          Nombre y color que se usaran como base al crear un nuevo partido.
+          Siempre podes modificarlos partido a partido.
+        </p>
+
+        <div className="settings-screen__team">
+          <div className="settings-screen__team-header">
+            <span
+              className="settings-screen__team-swatch"
+              style={{ background: teamA.color }}
+              aria-hidden
+            />
+            <span className="settings-screen__team-title">Equipo A</span>
+          </div>
+          <TextField
+            label="Nombre del equipo A"
+            value={teamA.name}
+            leadingIcon="edit"
+            onChange={(event) => setDefaultTeamName('A', event.target.value)}
+          />
+          <ColorPicker
+            label="Color del equipo A"
+            value={teamA.color}
+            palette={teamColorPalette}
+            onChange={(color) => setDefaultTeamColor('A', color)}
+            onCustomHexChange={(value) =>
+              setDefaultTeamColor('A', value.startsWith('#') ? value : `#${value}`)
+            }
+            id="settings-color-A"
+          />
+          <input
+            type="hidden"
+            value={hexInputs.A}
+            onBlur={() => commitHex('A')}
+            readOnly
+            aria-hidden
+          />
+        </div>
+
+        <div className="md-divider" />
+
+        <div className="settings-screen__team">
+          <div className="settings-screen__team-header">
+            <span
+              className="settings-screen__team-swatch"
+              style={{ background: teamB.color }}
+              aria-hidden
+            />
+            <span className="settings-screen__team-title">Equipo B</span>
+          </div>
+          <TextField
+            label="Nombre del equipo B"
+            value={teamB.name}
+            leadingIcon="edit"
+            onChange={(event) => setDefaultTeamName('B', event.target.value)}
+          />
+          <ColorPicker
+            label="Color del equipo B"
+            value={teamB.color}
+            palette={teamColorPalette}
+            onChange={(color) => setDefaultTeamColor('B', color)}
+            onCustomHexChange={(value) =>
+              setDefaultTeamColor('B', value.startsWith('#') ? value : `#${value}`)
+            }
+            id="settings-color-B"
+          />
+          <input
+            type="hidden"
+            value={hexInputs.B}
+            onBlur={() => commitHex('B')}
+            readOnly
+            aria-hidden
+          />
+        </div>
+
+        <div className="settings-screen__group-footer">
+          <Button
+            variant="text"
+            size="small"
+            leadingIcon="restart_alt"
+            onClick={resetTeams}
+          >
+            Restablecer equipos
+          </Button>
+        </div>
       </div>
 
       <div className="settings-screen__group">
@@ -213,9 +360,14 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
 
       <div className="settings-screen__group">
         <h2 className="settings-screen__group-header">
-          <Icon name="visibility" />
-          Pantalla
+          <Icon name="timer" />
+          Temporizador
         </h2>
+        <p className="settings-screen__group-hint">
+          El cronometro y sus botones vienen desactivados por defecto.
+          Activalos si queres llevar el tiempo del partido y poder
+          iniciarlo, pausarlo o reiniciarlo desde la barra superior.
+        </p>
         <List>
           <ListItem
             type="button"
@@ -226,6 +378,19 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
               <Switch
                 checked={settings.showClock}
                 onChange={(event) => set('showClock', event.target.checked)}
+              />
+            }
+          />
+          <ListItemDivider />
+          <ListItem
+            type="button"
+            onClick={() => set('showTimerControls', !(settings.showTimerControls ?? false))}
+            headline="Botones del temporizador"
+            supporting="Mostrar los botones para iniciar, pausar y reiniciar el cronometro."
+            trailing={
+              <Switch
+                checked={settings.showTimerControls ?? false}
+                onChange={(event) => set('showTimerControls', event.target.checked)}
               />
             }
           />

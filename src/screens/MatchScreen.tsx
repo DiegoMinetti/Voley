@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '../components/m3/Button'
 import { Dialog } from '../components/m3/Dialog'
 import { Icon } from '../components/m3/Icon'
@@ -6,6 +6,11 @@ import { IconButton } from '../components/m3/IconButton'
 import { SwapButton } from '../components/m3/SwapButton'
 import { TopAppBar } from '../components/m3/TopAppBar'
 import { WinnerOverlay } from '../components/WinnerOverlay'
+import {
+  SizeSettingsDialog,
+  type SizeScaleValues,
+} from '../components/SizeSettingsDialog'
+import { TeamEditDialog } from '../components/TeamEditDialog'
 import type {
   MatchEvent,
   MatchProjection,
@@ -24,10 +29,20 @@ interface MatchScreenProps {
   projection: MatchProjection
   isDark: boolean
   showClock: boolean
+  /**
+   * Whether to render the in-match timer control buttons (play/pause + reset)
+   * next to the clock in the top app bar. Independent from `showClock` so the
+   * user can opt for a read-only clock or full control.
+   */
+  showTimerControls: boolean
   pointsScale: number
   teamNameScale: number
   setsScale: number
   globalScale: number
+  /** Called whenever the user moves a size slider. Receives the new full set. */
+  onScalesChange: (next: SizeScaleValues) => void
+  /** Called when the user saves a new name/color for either team. */
+  onTeamsChange: (next: Record<TeamSide, TeamConfig>) => void
   setModal: string | null
   onDismissSetModal: () => void
   onAddPoint: (team: TeamSide) => void
@@ -85,16 +100,23 @@ const formatTime = (timestamp: number): string =>
  *  - On a landscape phone (small height, coarse pointer) we hide every piece
  *    of chrome except the two score halves so the player can use the whole
  *    viewport for tapping.
+ *  - The size dialog (text size for points / team name / sets / global) can be
+ *    opened directly from the top app bar and updates the scoreboard live.
+ *  - The team edit dialog (name + color per side) is also opened from the
+ *    top app bar and updates the scoreboard live, no need to exit the match.
  */
 export const MatchScreen = ({
   match,
   projection,
   isDark,
   showClock,
+  showTimerControls,
   pointsScale,
   teamNameScale,
   setsScale,
   globalScale,
+  onScalesChange,
+  onTeamsChange,
   setModal,
   onDismissSetModal,
   onAddPoint,
@@ -111,6 +133,8 @@ export const MatchScreen = ({
   const isFinished = projection.matchFinished
   const clockRef = useRef<HTMLSpanElement>(null)
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [sizeDialogOpen, setSizeDialogOpen] = useState(false)
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false)
   const [winnerOverlayOpen, setWinnerOverlayOpen] = useState(false)
   const historyListRef = useRef<HTMLOListElement>(null)
 
@@ -192,6 +216,30 @@ export const MatchScreen = ({
     onPushEvent({ timestamp: Date.now(), type: 'TIMER_RESET' })
   }
 
+  const handleResetScales = useCallback((): void => {
+    onScalesChange({
+      pointsScale: 1,
+      teamNameScale: 1,
+      setsScale: 1,
+      globalScale: 1,
+    })
+  }, [onScalesChange])
+
+  const handleSaveTeams = useCallback(
+    (next: Record<TeamSide, TeamConfig>): void => {
+      onTeamsChange(next)
+      setTeamDialogOpen(false)
+    },
+    [onTeamsChange],
+  )
+
+  const sizeValues: SizeScaleValues = {
+    pointsScale,
+    teamNameScale,
+    setsScale,
+    globalScale,
+  }
+
   return (
     <div className={'match-screen' + (isCompact ? ' match-screen--compact' : '')}>
       <TopAppBar
@@ -226,7 +274,21 @@ export const MatchScreen = ({
         }
         actions={
           <>
-            {showClock && (
+            <IconButton
+              icon="format_size"
+              label="Ajustar tamaños del marcador"
+              variant="standard"
+              size="small"
+              onClick={() => setSizeDialogOpen(true)}
+            />
+            <IconButton
+              icon="group"
+              label="Editar equipos"
+              variant="standard"
+              size="small"
+              onClick={() => setTeamDialogOpen(true)}
+            />
+            {showTimerControls && (
               <>
                 <Button
                   variant="text"
@@ -444,6 +506,21 @@ export const MatchScreen = ({
           )}
         </div>
       </Dialog>
+
+      <SizeSettingsDialog
+        open={sizeDialogOpen}
+        values={sizeValues}
+        onChange={onScalesChange}
+        onReset={handleResetScales}
+        onClose={() => setSizeDialogOpen(false)}
+      />
+
+      <TeamEditDialog
+        open={teamDialogOpen}
+        teams={match.teams}
+        onSave={handleSaveTeams}
+        onClose={() => setTeamDialogOpen(false)}
+      />
 
       <WinnerOverlay
         open={winnerOverlayOpen && isFinished}

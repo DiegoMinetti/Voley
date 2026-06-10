@@ -11,18 +11,8 @@ import { TopAppBar } from '../components/m3/TopAppBar'
 import { isValidHexColor } from '../utils/format'
 import { defaultMatchConfig } from '../storage/defaults'
 import type { BestOfSets, MatchConfig, TeamConfig, TeamSide } from '../types/models'
+import { teamColorPalette } from '../features/teams/palette'
 import './NewMatchScreen.css'
-
-const teamColorPalette = [
-  '#0f5ea8',
-  '#bf3f34',
-  '#0e7a4a',
-  '#f0a202',
-  '#7a2e8b',
-  '#1b1b1b',
-  '#5f7080',
-  '#e0527d',
-]
 
 interface NewMatchScreenProps {
   teams: Record<TeamSide, TeamConfig>
@@ -193,6 +183,14 @@ export const NewMatchScreen = ({
             checked={config.showClock}
             onChange={(event) =>
               onConfigChange({ ...config, showClock: event.target.checked })
+            }
+          />
+          <Switch
+            label="Botones del temporizador"
+            description="Mostrar los botones para iniciar, pausar y reiniciar el cronometro."
+            checked={config.showTimerControls ?? false}
+            onChange={(event) =>
+              onConfigChange({ ...config, showTimerControls: event.target.checked })
             }
           />
           <Switch

@@ -1,0 +1,42 @@
+/* ==========================================================================
+   SizeSettingsDialog — modal that adjusts the scoreboard size scales
+   in real time. The dialog is rendered inside the same Dialog portal used
+   by the rest of the app, so the visual style mostly relies on existing
+   .md-dialog tokens. This file only adds layout for the inner content.
+   ========================================================================== */
+
+.size-settings-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  /* Don't impose a width — the parent .md-dialog already constrains it to
+     min 280px / max 560px. Setting a width here would shrink the dialog
+     to 520px on wide screens and break the M3 sizing. */
+  text-align: left;
+}
+
+.size-settings-dialog__hint {
+  margin: 0;
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.size-settings-dialog__sliders {
+  display: flex;
+  flex-direction: column;
+  /* Reserve room for the value indicator that pops above the slider thumb
+     on hover/focus so it doesn't get clipped by the modal edge. */
+  padding: 18px 0 4px;
+}
+
+.size-settings-dialog__sliders .md-divider {
+  margin: 0;
+  width: auto;
+}
+
+.size-settings-dialog__footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 0 0 4px;
+}

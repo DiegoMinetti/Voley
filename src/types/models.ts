@@ -22,6 +22,13 @@ export interface MatchConfig {
    * before the setting was introduced; missing values default to `false`.
    */
   showTimeoutButtons?: boolean
+  /**
+   * Whether to show the in-match timer control buttons (play/pause + reset)
+   * next to the clock in the top app bar. Optional for backwards
+   * compatibility with matches stored before the setting was introduced;
+   * missing values default to `false`.
+   */
+  showTimerControls?: boolean
 }
 
 export interface UserSettings {
@@ -36,6 +43,13 @@ export interface UserSettings {
    * from older app versions; missing values default to `false`.
    */
   showTimeoutButtons?: boolean
+  /**
+   * Whether to show the in-match timer control buttons (play/pause + reset)
+   * next to the clock in the top app bar. Optional for backwards
+   * compatibility with stored settings from older app versions; missing
+   * values default to `false`.
+   */
+  showTimerControls?: boolean
   /**
    * Multiplier applied to the points number on the scoreboard half.
    * Range: 0.5 - 2.0. Defaults to 1.
@@ -57,6 +71,19 @@ export interface UserSettings {
    * Range: 0.5 - 2.0. Defaults to 1.
    */
   globalScale?: number
+  /**
+   * Default name + color for team A. These values prefill the "New match"
+   * screen so the user does not have to retype them for every game.
+   * Optional for backwards compatibility with stored settings from older
+   * app versions; missing values default to "Equipo A" / "#0f5ea8".
+   */
+  defaultTeamA?: TeamConfig
+  /**
+   * Default name + color for team B. Optional for backwards compatibility
+   * with stored settings from older app versions; missing values default
+   * to "Equipo B" / "#bf3f34".
+   */
+  defaultTeamB?: TeamConfig
 }
 
 export type MatchEvent =

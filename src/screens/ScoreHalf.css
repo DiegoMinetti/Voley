@@ -8,6 +8,12 @@
   --points-scale: 1;
   --team-name-scale: 1;
   --sets-scale: 1;
+  /* Driven by React from the swipe gesture. 0 = resting. */
+  --swipe-offset: 0px;
+  /* Length of the "spring back" animation (with overshoot / bounce). */
+  --swipe-duration: 380ms;
+  /* Length of the quick "lift" animation to the peak offset (no overshoot). */
+  --swipe-jump-duration: 90ms;
 
   position: relative;
   display: flex;
@@ -27,12 +33,34 @@
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
   user-select: none;
+  /* The card follows the user's finger in real time (--swipe-offset is
+     updated on every pointermove). When the gesture finishes the offset
+     springs back to 0 (or lifts to the peak) via this transition. */
+  transform: translate3d(0, var(--swipe-offset), 0);
+  will-change: transform;
+  touch-action: none;
   overflow: hidden;
   transition:
     background-color var(--md-sys-motion-duration-medium2)
       var(--md-sys-motion-easing-emphasized),
-    transform var(--md-sys-motion-duration-short2)
-      var(--md-sys-motion-easing-standard);
+    transform var(--swipe-duration) cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* While the user is actively dragging we want 1:1 tracking with no
+   easing — the offset already moves with the pointer, so the CSS
+   transition must be off. */
+.score-half--dragging {
+  transition: none;
+  cursor: grabbing;
+}
+
+/* Quick lift from 0 → peak (no overshoot, snappy). */
+.score-half--jumping {
+  /* Override the default back-easing for the upward / downward leg of
+     the bounce — we want a fast, linear-feeling lift, the bounce
+     happens on the way *back*. */
+  transition: transform var(--swipe-jump-duration)
+    cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .score-half::before {
@@ -137,5 +165,6 @@
   );
   line-height: var(--md-sys-typescale-label-small-line);
   font-weight: var(--md-sys-typescale-label-small-weight);
+  letter-spacing: var(--md-sys-typescale-label-small-tracking);
   padding: calc(2px * var(--sets-scale, 1)) calc(8px * var(--sets-scale, 1));
 }
