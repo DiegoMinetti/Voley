@@ -194,6 +194,15 @@
   display: flex;
   flex-direction: row;
   flex: 1;
+  /* Without `min-height: 0`, this flex item defaults to `min-height: auto`
+     in a column flex container, which prevents it from shrinking below
+     its children's intrinsic minimum size. With the TopAppBar + controls
+     taking their natural height above/below, that would let the score
+     area push past 100dvh and the bottom of the cards would be clipped
+     by `.match-screen`'s `overflow: hidden`. Forcing `min-height: 0`
+     makes the score area absorb exactly whatever vertical room is left
+     after the chrome, so the two halves always stay inside the viewport. */
+  min-height: 0;
   padding: 6px;
   gap: 6px;
 }
