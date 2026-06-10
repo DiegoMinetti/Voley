@@ -1,84 +1,105 @@
 import type { CSSProperties } from 'react'
+import { Icon } from './Icon'
+import { cn } from './utils'
 
 interface ColorPickerProps {
   label: string
   value: string
   palette: string[]
   onChange: (color: string) => void
-  onCustomHexChange?: (hex: string) => void
-  id?: string
 }
 
-const classNames = (...names: Array<string | false | undefined>): string =>
-  names.filter(Boolean).join(' ')
+/**
+ * Pick a readable foreground color (black or white) for a swatch based on
+ * the brightness of the background. Mirrors the heuristic used in
+ * `useTeamTheme` so swatches stay legible on any chosen team color.
+ */
+const pickOnColor = (hex: string): string => {
+  const normalized = hex.replace('#', '')
+  if (!/^([0-9a-fA-F]{3}){1,2}$/.test(normalized)) return '#fff'
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : normalized
+  const r = parseInt(expanded.slice(0, 2), 16)
+  const g = parseInt(expanded.slice(2, 4), 16)
+  const b = parseInt(expanded.slice(4, 6), 16)
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return lum > 0.6 ? '#1b1b1b' : '#ffffff'
+}
 
 /**
- * Color picker combining a Material Design 3 swatch palette,
- * a native color input and a hex text field.
+ * Material Design 3 color picker that combines a curated swatch palette
+ * with a native color well.
+ *
+ * Layout:
+ *   ┌─ swatches row (curated palette) ────────────┐
+ *   │ ● ● ● ● ● ● ● ●                              │
+ *   └──────────────────────────────────────────────┘
+ *   ┌─ visual well (custom color picker) ─────────┐
+ *   │ [▢]  Selector visual                          │
+ *   │      Elegí un color personalizado            │
+ *   └──────────────────────────────────────────────┘
  */
-export const ColorPicker = ({
-  label,
-  value,
-  palette,
-  onChange,
-  onCustomHexChange,
-  id,
-}: ColorPickerProps) => {
+export const ColorPicker = ({ label, value, palette, onChange }: ColorPickerProps) => {
   return (
-    <div className="md-color-picker">
+    <div className="md-color-picker" role="group" aria-label={label}>
       <span className="md-color-picker__label md-typescale-label-large">
         {label}
       </span>
+
       <div
         className="md-color-picker__swatches"
-        role="group"
-        aria-label={`Paleta de colores para ${label}`}
+        aria-label={`Paleta sugerida para ${label}`}
       >
-        {palette.map((color) => (
-          <button
-            key={color}
-            type="button"
-            className={classNames(
-              'md-color-picker__swatch',
-              value.toLowerCase() === color.toLowerCase() &&
-                'md-color-picker__swatch--selected',
-            )}
-            style={{ '--swatch-color': color } as CSSProperties}
-            onClick={() => onChange(color)}
-            aria-label={`Elegir ${color}`}
-            aria-pressed={value.toLowerCase() === color.toLowerCase()}
-          />
-        ))}
+        {palette.map((color) => {
+          const selected = value.toLowerCase() === color.toLowerCase()
+          return (
+            <button
+              key={color}
+              type="button"
+              className={cn(
+                'md-color-picker__swatch',
+                selected && 'md-color-picker__swatch--selected',
+              )}
+              style={{ '--swatch-color': color } as CSSProperties}
+              onClick={() => onChange(color)}
+              aria-label={`Elegir ${color}`}
+              aria-pressed={selected}
+            />
+          )
+        })}
       </div>
-      <div className="md-color-picker__custom">
-        <label className="md-color-picker__custom-field">
-          <span className="md-typescale-label-small">Selector</span>
-          <input
-            type="color"
-            value={value}
-            onChange={(event) => onChange(event.target.value)}
-            aria-label={`Selector visual para ${label}`}
-          />
-        </label>
-        <label className="md-color-picker__custom-field">
-          <span className="md-typescale-label-small">Hex</span>
-          <input
-            id={id}
-            type="text"
-            className="md-color-picker__hex"
-            value={value}
-            onChange={(event) => onCustomHexChange?.(event.target.value)}
-            onBlur={(event) => {
-              const value = event.target.value.trim()
-              if (/^#([0-9a-fA-F]{3}){1,2}$/.test(value)) {
-                onChange(value)
-              }
-            }}
-            aria-label={`Codigo hexadecimal para ${label}`}
-            placeholder="#6750a4"
-          />
-        </label>
-      </div>
+
+      <label
+        className="md-color-picker__visual"
+        style={{ '--swatch-color': value } as CSSProperties}
+      >
+        <span
+          className="md-color-picker__visual-swatch"
+          style={{ color: pickOnColor(value) }}
+          aria-hidden
+        >
+          <Icon name="colorize" />
+        </span>
+        <span className="md-color-picker__visual-text">
+          <span className="md-color-picker__visual-label md-typescale-label-medium">
+            Selector visual
+          </span>
+          <span className="md-color-picker__visual-hint md-typescale-body-small">
+            Tocá para elegir un color personalizado
+          </span>
+        </span>
+        <input
+          type="color"
+          value={value}
+          onChange={(event) => onChange(event.target.value)}
+          aria-label={`Selector visual para ${label}`}
+        />
+      </label>
     </div>
   )
 }

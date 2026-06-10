@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Button } from '../components/m3/Button'
 import { Dialog } from '../components/m3/Dialog'
+import { Divider } from '../components/m3/Divider'
 import { Icon } from '../components/m3/Icon'
 import { IconButton } from '../components/m3/IconButton'
 import { SwapButton } from '../components/m3/SwapButton'
@@ -12,6 +13,7 @@ import {
 } from '../components/SizeSettingsDialog'
 import { TeamEditDialog } from '../components/TeamEditDialog'
 import type {
+  CompletedSet,
   MatchEvent,
   MatchProjection,
   MatchRecord,
@@ -43,7 +45,25 @@ interface MatchScreenProps {
   onScalesChange: (next: SizeScaleValues) => void
   /** Called when the user saves a new name/color for either team. */
   onTeamsChange: (next: Record<TeamSide, TeamConfig>) => void
+  /**
+   * Whether the user opted in to confirming the match finish (vs. auto-saving
+   * the moment the rules detect a winner). When true, we pop a Material
+   * dialog on finish asking them to close & save.
+   */
+  confirmFinish: boolean
+  /**
+   * Called when the user accepts the "Partido finalizado" dialog. The parent
+   * is in charge of finalizing the match record and navigating away.
+   */
+  onConfirmFinish: () => void
   setModal: string | null
+  /**
+   * The most recently completed set whose "set finalizado" dialog has not
+   * been dismissed yet. While it is non-null the scoreboard keeps showing
+   * the winning points of that set (e.g. 25-23) so the user actually sees
+   * the point that ended the set, instead of jumping straight to 0/0.
+   */
+  pendingSet: CompletedSet | null
   onDismissSetModal: () => void
   onAddPoint: (team: TeamSide) => void
   onSubtractPoint: (team: TeamSide) => void
@@ -52,7 +72,6 @@ interface MatchScreenProps {
   onRedo: () => void
   onJumpTo: (cursor: number) => void
   onExit: () => void
-  onToggleFullscreen: () => void
 }
 
 const describeEvent = (
@@ -117,7 +136,10 @@ export const MatchScreen = ({
   globalScale,
   onScalesChange,
   onTeamsChange,
+  confirmFinish,
+  onConfirmFinish,
   setModal,
+  pendingSet,
   onDismissSetModal,
   onAddPoint,
   onSubtractPoint,
@@ -126,7 +148,6 @@ export const MatchScreen = ({
   onRedo,
   onJumpTo,
   onExit,
-  onToggleFullscreen,
 }: MatchScreenProps) => {
   const visualSides: TeamSide[] = projection.sidesSwapped ? ['B', 'A'] : ['A', 'B']
   const inProgress = match.status === 'in_progress'
@@ -136,6 +157,10 @@ export const MatchScreen = ({
   const [sizeDialogOpen, setSizeDialogOpen] = useState(false)
   const [teamDialogOpen, setTeamDialogOpen] = useState(false)
   const [winnerOverlayOpen, setWinnerOverlayOpen] = useState(false)
+  // When the match is finished and `confirmFinish` is on, we open this dialog
+  // so the user can decide whether to close & save. Cancelling simply hides
+  // the dialog and leaves the match in its current in-progress state.
+  const [finishPromptOpen, setFinishPromptOpen] = useState(false)
   // When true, the top app bar and the bottom controls are visible. When
   // false, they are collapsed to 0 height so the two score halves absorb
   // the entire viewport — a focused "points-only" mode. The edge handle
@@ -175,6 +200,34 @@ export const MatchScreen = ({
     }
     finishedRef.current = isFinished
   }, [isFinished])
+
+  // When the match finishes while the user opted in to confirmation, open the
+  // integrated "Partido finalizado" dialog. We trigger it on the
+  // is-finished transition and only while the match is still in progress
+  // (re-opening an already-finalized match should not re-prompt).
+  const finishPromptShownRef = useRef<boolean>(false)
+  useEffect(() => {
+    if (!confirmFinish) {
+      finishPromptShownRef.current = false
+      return
+    }
+    if (isFinished && inProgress && !finishPromptShownRef.current) {
+      setFinishPromptOpen(true)
+      finishPromptShownRef.current = true
+    }
+    if (!isFinished) {
+      finishPromptShownRef.current = false
+    }
+  }, [isFinished, inProgress, confirmFinish])
+
+  const handleAcceptFinish = useCallback((): void => {
+    setFinishPromptOpen(false)
+    onConfirmFinish()
+  }, [onConfirmFinish])
+
+  const handleCancelFinish = useCallback((): void => {
+    setFinishPromptOpen(false)
+  }, [])
 
   // Build a stable, descending list (newest first) for the history modal.
   const historyEntries = useMemo(
@@ -302,6 +355,7 @@ export const MatchScreen = ({
               size="small"
               onClick={() => setSizeDialogOpen(true)}
             />
+            <Divider className="md-divider--vertical" />
             <IconButton
               icon="group"
               label="Editar equipos"
@@ -329,6 +383,7 @@ export const MatchScreen = ({
                 />
               </>
             )}
+            <Divider className="md-divider--vertical" />
             <IconButton
               icon="undo"
               label="Deshacer"
@@ -352,13 +407,6 @@ export const MatchScreen = ({
               size="small"
               onClick={() => setHistoryOpen(true)}
             />
-            <IconButton
-              icon="fullscreen"
-              label="Pantalla completa"
-              variant="standard"
-              size="small"
-              onClick={onToggleFullscreen}
-            />
           </>
         }
       />
@@ -366,16 +414,37 @@ export const MatchScreen = ({
       <div className="match-screen__score">
         {visualSides.map((side) => {
           const isSecond = projection.sidesSwapped
+          // While a set is between the projector resetting the points to 0/0
+          // and the user dismissing the "set finalizado" dialog, `points` is
+          // already 0 but `pendingSet` still holds the value the user just
+          // saw (e.g. 25). We forward that snapshot to the scoreboard so it
+          // keeps showing the winning point until the dialog is closed.
+          // Snapshot is hoisted to a local so TypeScript can narrow the
+          // non-null case into the ternary below.
+          const snapshot = pendingSet
+          const showLastSet = Boolean(
+            snapshot && projection.points[side] === 0 && !isFinished,
+          )
+          const displayPoints = showLastSet && snapshot
+            ? side === 'A'
+              ? snapshot.pointsA
+              : snapshot.pointsB
+            : projection.points[side]
           return (
             <ScoreHalf
               key={side}
               side={side}
               team={match.teams[side]}
-              points={projection.points[side]}
+              points={displayPoints}
               setsWon={projection.setsWon[side]}
               swapped={isSecond}
               isDark={isDark}
               finished={isFinished}
+              // Block the half while a set has just finished (its dialog
+              // is up) OR while the whole match is over. Otherwise the
+              // next tap would be charged to the next set before the
+              // user even acknowledged the previous one.
+              locked={Boolean(snapshot) || isFinished}
               compact={isCompact}
               pointsScale={pointsScale}
               teamNameScale={teamNameScale}
@@ -565,6 +634,36 @@ export const MatchScreen = ({
         setsWon={projection.setsWon}
         onClose={() => setWinnerOverlayOpen(false)}
       />
+
+      <Dialog
+        open={finishPromptOpen}
+        onClose={handleCancelFinish}
+        title="Partido finalizado"
+        icon="emoji_events"
+        actions={
+          <>
+            <Button variant="text" onClick={handleCancelFinish}>
+              Cancelar
+            </Button>
+            <Button
+              variant="filled"
+              onClick={handleAcceptFinish}
+              leadingIcon="check"
+            >
+              Guardar y salir
+            </Button>
+          </>
+        }
+      >
+        <p className="match-screen__finish-summary">
+          {projection.winner
+            ? `${match.teams[projection.winner].name} se llevo el partido ${projection.setsWon[projection.winner]} - ${projection.setsWon[projection.winner === 'A' ? 'B' : 'A']}.`
+            : 'El partido llego a su fin.'}
+        </p>
+        <p className="match-screen__finish-hint">
+          Deseas cerrar y guardar como terminado?
+        </p>
+      </Dialog>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Button } from '../components/m3/Button'
 import { ColorPicker } from '../components/m3/ColorPicker'
 import { Divider } from '../components/m3/Divider'
@@ -12,8 +12,95 @@ import { TopAppBar } from '../components/m3/TopAppBar'
 import { teamColorPalette } from '../features/teams/palette'
 import { defaultTeamA, defaultTeamB } from '../storage/defaults'
 import type { TeamConfig, TeamSide, UserSettings } from '../types/models'
-import { isValidHexColor } from '../utils/format'
 import './SettingsScreen.css'
+
+/**
+ * Pick a readable foreground color (black or white) for a swatch based on
+ * the brightness of the background. Mirrors the heuristic in
+ * `useTeamTheme` so the chip in the settings screen matches the scoreboard.
+ */
+const pickOnColor = (hex: string): string => {
+  const normalized = hex.replace('#', '')
+  if (!/^([0-9a-fA-F]{3}){1,2}$/.test(normalized)) return '#fff'
+  const expanded =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : normalized
+  const r = parseInt(expanded.slice(0, 2), 16)
+  const g = parseInt(expanded.slice(2, 4), 16)
+  const b = parseInt(expanded.slice(4, 6), 16)
+  const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return lum > 0.6 ? '#1b1b1b' : '#ffffff'
+}
+
+interface TeamDefaultsCardProps {
+  side: TeamSide
+  team: TeamConfig
+  onName: (name: string) => void
+  onColor: (color: string) => void
+}
+
+const TeamDefaultsCard = ({
+  side,
+  team,
+  onName,
+  onColor,
+}: TeamDefaultsCardProps) => {
+  const sideLabel = side === 'A' ? 'Equipo A' : 'Equipo B'
+  const sideIcon = side === 'A' ? 'shield' : 'workspace_premium'
+  const onColorForChip = pickOnColor(team.color)
+  const previewName = team.name.trim() || sideLabel
+
+  return (
+    <section
+      className={`settings-screen__team settings-screen__team--${side.toLowerCase()}`}
+      aria-labelledby={`settings-team-${side}-title`}
+    >
+      <header className="settings-screen__team-header">
+        <div
+          className="settings-screen__team-avatar"
+          style={{ backgroundColor: team.color, color: onColorForChip }}
+          aria-hidden
+        >
+          <Icon name={sideIcon} filled />
+        </div>
+        <div className="settings-screen__team-meta">
+          <h3
+            id={`settings-team-${side}-title`}
+            className="settings-screen__team-title"
+          >
+            {sideLabel}
+          </h3>
+          <span className="settings-screen__team-subtitle">
+            {side === 'A' ? 'Primer equipo del marcador' : 'Segundo equipo del marcador'}
+          </span>
+        </div>
+        <span
+          className="settings-screen__team-chip"
+          style={{ backgroundColor: team.color, color: onColorForChip }}
+          aria-live="polite"
+        >
+          {previewName}
+        </span>
+      </header>
+      <TextField
+        label={`Nombre del ${sideLabel.toLowerCase()}`}
+        value={team.name}
+        leadingIcon="edit"
+        onChange={(event) => onName(event.target.value)}
+      />
+      <ColorPicker
+        label={`Color del ${sideLabel.toLowerCase()}`}
+        value={team.color}
+        palette={teamColorPalette}
+        onChange={onColor}
+      />
+    </section>
+  )
+}
 
 interface SettingsScreenProps {
   settings: UserSettings
@@ -49,13 +136,6 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
   const teamA = safeTeam(settings.defaultTeamA, defaultTeamA)
   const teamB = safeTeam(settings.defaultTeamB, defaultTeamB)
 
-  // Local mirror of the hex text field. Lets the user type partial values
-  // (e.g. "#0") without losing what they already have on the team object.
-  const [hexInputs, setHexInputs] = useState<Record<TeamSide, string>>({
-    A: teamA.color,
-    B: teamB.color,
-  })
-
   const setDefaultTeamName = (side: TeamSide, name: string): void => {
     const key = side === 'A' ? 'defaultTeamA' : 'defaultTeamB'
     const current = side === 'A' ? teamA : teamB
@@ -63,23 +143,9 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
   }
 
   const setDefaultTeamColor = (side: TeamSide, color: string): void => {
-    setHexInputs((prev) => ({ ...prev, [side]: color }))
-    if (isValidHexColor(color)) {
-      const key = side === 'A' ? 'defaultTeamA' : 'defaultTeamB'
-      const current = side === 'A' ? teamA : teamB
-      set(key, { ...current, color })
-    }
-  }
-
-  const commitHex = (side: TeamSide): void => {
-    const value = hexInputs[side].trim()
     const key = side === 'A' ? 'defaultTeamA' : 'defaultTeamB'
     const current = side === 'A' ? teamA : teamB
-    if (isValidHexColor(value)) {
-      set(key, { ...current, color: value })
-    } else {
-      setHexInputs((prev) => ({ ...prev, [side]: current.color }))
-    }
+    set(key, { ...current, color })
   }
 
   const resetScales = useCallback(() => {
@@ -98,7 +164,6 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
       defaultTeamA: { ...defaultTeamA },
       defaultTeamB: { ...defaultTeamB },
     })
-    setHexInputs({ A: defaultTeamA.color, B: defaultTeamB.color })
   }, [onChange, settings])
 
   return (
@@ -142,75 +207,21 @@ export const SettingsScreen = ({ settings, onChange, onBack }: SettingsScreenPro
           Siempre podes modificarlos partido a partido.
         </p>
 
-        <div className="settings-screen__team">
-          <div className="settings-screen__team-header">
-            <span
-              className="settings-screen__team-swatch"
-              style={{ background: teamA.color }}
-              aria-hidden
-            />
-            <span className="settings-screen__team-title">Equipo A</span>
-          </div>
-          <TextField
-            label="Nombre del equipo A"
-            value={teamA.name}
-            leadingIcon="edit"
-            onChange={(event) => setDefaultTeamName('A', event.target.value)}
-          />
-          <ColorPicker
-            label="Color del equipo A"
-            value={teamA.color}
-            palette={teamColorPalette}
-            onChange={(color) => setDefaultTeamColor('A', color)}
-            onCustomHexChange={(value) =>
-              setDefaultTeamColor('A', value.startsWith('#') ? value : `#${value}`)
-            }
-            id="settings-color-A"
-          />
-          <input
-            type="hidden"
-            value={hexInputs.A}
-            onBlur={() => commitHex('A')}
-            readOnly
-            aria-hidden
-          />
-        </div>
+        <TeamDefaultsCard
+          side="A"
+          team={teamA}
+          onName={(name) => setDefaultTeamName('A', name)}
+          onColor={(color) => setDefaultTeamColor('A', color)}
+        />
 
         <div className="md-divider" />
 
-        <div className="settings-screen__team">
-          <div className="settings-screen__team-header">
-            <span
-              className="settings-screen__team-swatch"
-              style={{ background: teamB.color }}
-              aria-hidden
-            />
-            <span className="settings-screen__team-title">Equipo B</span>
-          </div>
-          <TextField
-            label="Nombre del equipo B"
-            value={teamB.name}
-            leadingIcon="edit"
-            onChange={(event) => setDefaultTeamName('B', event.target.value)}
-          />
-          <ColorPicker
-            label="Color del equipo B"
-            value={teamB.color}
-            palette={teamColorPalette}
-            onChange={(color) => setDefaultTeamColor('B', color)}
-            onCustomHexChange={(value) =>
-              setDefaultTeamColor('B', value.startsWith('#') ? value : `#${value}`)
-            }
-            id="settings-color-B"
-          />
-          <input
-            type="hidden"
-            value={hexInputs.B}
-            onBlur={() => commitHex('B')}
-            readOnly
-            aria-hidden
-          />
-        </div>
+        <TeamDefaultsCard
+          side="B"
+          team={teamB}
+          onName={(name) => setDefaultTeamName('B', name)}
+          onColor={(color) => setDefaultTeamColor('B', color)}
+        />
 
         <div className="settings-screen__group-footer">
           <Button

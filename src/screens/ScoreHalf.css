@@ -92,8 +92,30 @@
   opacity: 0.6;
 }
 
+/* Locked: a set just finished and the user has not yet dismissed the
+ * "set finalizado" dialog. We darken the card a touch, drop the cursor
+ * to "not-allowed", and disable hover / press feedback so the user gets
+ * a clear visual hint that the half is non-interactive. The button is
+ * already rendered with `disabled` (so clicks are blocked natively),
+ * these rules just round out the affordance. */
+.score-half--locked {
+  cursor: not-allowed;
+  opacity: 0.85;
+  filter: saturate(0.85);
+}
+
+.score-half--locked::before {
+  /* Skip the hover / pressed / focused highlight overlay. */
+  opacity: 0 !important;
+  transition-duration: 0ms;
+}
+
 .score-half__points {
-  font-size: calc(clamp(140px, 38vw, 360px) * var(--points-scale, 1));
+  /* The base size is computed in JS to be the largest that fits "00"
+     inside the available space; the user scale (when the slider has
+     been touched) multiplies it. The fallback (140px) keeps the layout
+     sane during the first paint, before the auto-fit has run. */
+  font-size: calc(var(--auto-points-size, 140px) * var(--points-scale, 1));
   line-height: 0.9;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
@@ -101,15 +123,21 @@
   font-family: var(--md-sys-typescale-font-brand);
   position: relative;
   z-index: 1;
+  /* `inline-block` + `min-width: 2ch` reserves horizontal room for two
+     digits no matter the actual score, so "0" and "00" stay perfectly
+     centred on the same axis. `ch` is the width of the "0" glyph in the
+     current font (and with `tabular-nums` on, every digit is exactly
+     that wide), so `2ch` is always "the space for two digits". */
+  display: inline-block;
+  text-align: center;
+  min-width: 2ch;
 }
 
 .score-half__name {
-  font-size: calc(
-    var(--md-sys-typescale-title-large-size) * var(--team-name-scale, 1)
-  );
-  line-height: var(--md-sys-typescale-title-large-line);
-  font-weight: var(--md-sys-typescale-title-large-weight);
-  letter-spacing: var(--md-sys-typescale-title-large-tracking);
+  font-size: calc(var(--auto-name-size, 22px) * var(--team-name-scale, 1));
+  line-height: 1.2;
+  font-weight: 500;
+  letter-spacing: 0;
   text-align: center;
   max-width: 100%;
   overflow: hidden;
@@ -126,14 +154,13 @@
   padding: calc(4px * var(--sets-scale, 1)) calc(12px * var(--sets-scale, 1));
   border-radius: var(--md-sys-shape-corner-full);
   background: color-mix(in srgb, var(--team-on) 18%, transparent);
-  font-size: calc(
-    var(--md-sys-typescale-label-large-size) * var(--sets-scale, 1)
-  );
-  line-height: var(--md-sys-typescale-label-large-line);
-  font-weight: var(--md-sys-typescale-label-large-weight);
-  letter-spacing: var(--md-sys-typescale-label-large-tracking);
+  font-size: calc(var(--auto-sets-size, 14px) * var(--sets-scale, 1));
+  line-height: 1;
+  font-weight: 500;
+  letter-spacing: 0;
   position: relative;
   z-index: 1;
+  white-space: nowrap;
 }
 
 
@@ -148,27 +175,17 @@
   padding: 8px 12px;
   gap: 4px;
   border-radius: var(--md-sys-shape-corner-medium);
-}
-
-.score-half--compact .score-half__points {
-  font-size: calc(clamp(120px, 34vh, 320px) * var(--points-scale, 1));
-}
-
-.score-half--compact .score-half__name {
-  font-size: calc(
-    var(--md-sys-typescale-title-small-size) * var(--team-name-scale, 1)
-  );
-  line-height: var(--md-sys-typescale-title-small-line);
-  font-weight: var(--md-sys-typescale-title-small-weight);
-  letter-spacing: var(--md-sys-typescale-title-small-tracking);
+  /* Tighter padding + smaller gap → the auto-fit hook recomputes a new
+     base size on resize and the three regions (points / name / sets)
+     grow to fill whatever space the compact card has. We deliberately
+     do NOT override the font-size here, so the priority order
+     (points > name > sets) and the two-digit reservation on the
+     number stay in effect on landscape phones too. */
 }
 
 .score-half--compact .score-half__sets {
-  font-size: calc(
-    var(--md-sys-typescale-label-small-size) * var(--sets-scale, 1)
-  );
-  line-height: var(--md-sys-typescale-label-small-line);
-  font-weight: var(--md-sys-typescale-label-small-weight);
-  letter-spacing: var(--md-sys-typescale-label-small-tracking);
+  /* The pill itself can stay a touch more compact in landscape mode.
+     Font-size still comes from --auto-sets-size, only the padding
+     changes so the pill doesn't look bulky when the card is small. */
   padding: calc(2px * var(--sets-scale, 1)) calc(8px * var(--sets-scale, 1));
 }

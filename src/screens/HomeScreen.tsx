@@ -1,6 +1,5 @@
 import { Button } from '../components/m3/Button'
 import { Icon } from '../components/m3/Icon'
-import { NavigationBar } from '../components/m3/NavigationBar'
 import { Snackbar } from '../components/m3/Snackbar'
 import { TopAppBar } from '../components/m3/TopAppBar'
 import type { MatchRecord } from '../types/models'
@@ -30,15 +29,24 @@ export const HomeScreen = ({
     <div className="home-screen">
       <TopAppBar
         variant="small"
-        headline="Voley Match PWA"
+        headline="Voley Match"
         actions={
-          <Button
-            variant="text"
-            icon="settings"
-            iconOnly
-            aria-label="Configuracion"
-            onClick={onOpenSettings}
-          />
+          <>
+            <Button
+              variant="text"
+              icon="history"
+              iconOnly
+              aria-label="Historial"
+              onClick={onOpenHistory}
+            />
+            <Button
+              variant="text"
+              icon="settings"
+              iconOnly
+              aria-label="Configuracion"
+              onClick={onOpenSettings}
+            />
+          </>
         }
       />
       <section className="home-screen__hero" aria-labelledby="home-title">
@@ -54,13 +62,6 @@ export const HomeScreen = ({
       </section>
 
       <div className="home-screen__actions">
-        {hasInProgress && (
-          <div className="home-screen__hint" role="status">
-            <Icon name="play_circle" />
-            Tienes un partido en curso que puedes continuar.
-          </div>
-        )}
-
         <Button
           variant="filled"
           size="large"
@@ -70,54 +71,22 @@ export const HomeScreen = ({
         >
           Nuevo partido
         </Button>
-        <Button
-          variant="tonal"
-          size="large"
-          fullWidth
-          leadingIcon="play_arrow"
-          onClick={onContinueLast}
-          disabled={!hasInProgress}
-        >
-          Continuar ultimo
-        </Button>
-        <Button
-          variant="outlined"
-          size="large"
-          fullWidth
-          leadingIcon="history"
-          onClick={onOpenHistory}
-        >
-          Historial
-        </Button>
-        <Button
-          variant="text"
-          size="large"
-          fullWidth
-          leadingIcon="settings"
-          onClick={onOpenSettings}
-        >
-          Configuracion
-        </Button>
+        {hasInProgress && (
+          <Button
+            variant="tonal"
+            size="large"
+            fullWidth
+            leadingIcon="play_arrow"
+            onClick={onContinueLast}
+          >
+            Continuar ultimo
+          </Button>
+        )}
       </div>
 
-      <NavigationBar
-        items={[
-          { key: 'home', label: 'Inicio', icon: 'home', active: true },
-          { key: 'new', label: 'Nuevo', icon: 'add', onClick: onStartNew },
-          {
-            key: 'history',
-            label: 'Historial',
-            icon: 'history',
-            onClick: onOpenHistory,
-          },
-          {
-            key: 'settings',
-            label: 'Ajustes',
-            icon: 'settings',
-            onClick: onOpenSettings,
-          },
-        ]}
-      />
+      <footer className="home-screen__footer" aria-label="Informacion">
+        Funciona 100% offline. Tus datos quedan en este dispositivo.
+      </footer>
 
       <Snackbar open={Boolean(statusMessage)} onClose={onDismissStatus} message={statusMessage} />
     </div>

@@ -1,8 +1,9 @@
 /* ==========================================================================
-   ColorPicker
+   ColorPicker — M3 styled swatch palette + native color well.
    ========================================================================== */
 .md-color-picker {
-  display: grid;
+  display: flex;
+  flex-direction: column;
   gap: 12px;
   padding: 16px;
   background: var(--md-sys-color-surface-container-low);
@@ -14,6 +15,7 @@
   color: var(--md-sys-color-on-surface-variant);
 }
 
+/* ---- Swatch palette ---------------------------------------------------- */
 .md-color-picker__swatches {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -31,12 +33,19 @@
   padding: 0;
   transition:
     transform var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard),
+    border-color var(--md-sys-motion-duration-short2)
       var(--md-sys-motion-easing-standard);
   -webkit-tap-highlight-color: transparent;
 }
 
 .md-color-picker__swatch:hover {
   transform: scale(1.06);
+}
+
+.md-color-picker__swatch:focus-visible {
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
 }
 
 .md-color-picker__swatch--selected {
@@ -62,44 +71,84 @@
     'opsz' 24;
 }
 
-.md-color-picker__custom {
-  display: grid;
-  grid-template-columns: 80px 1fr;
+/* ---- Visual well (native color picker) -------------------------------- */
+/* Styled like a Material 3 list item / outlined button so it is clearly
+   interactive. The real <input type="color"> is visually hidden but still
+   tap / keyboard accessible. */
+.md-color-picker__visual {
+  position: relative;
+  display: flex;
+  align-items: center;
   gap: 12px;
-}
-
-.md-color-picker__custom-field {
-  display: grid;
-  gap: 4px;
-  color: var(--md-sys-color-on-surface-variant);
-}
-
-.md-color-picker__custom-field input[type='color'] {
-  width: 100%;
-  height: 40px;
-  padding: 0;
-  border: 1px solid var(--md-sys-color-outline-variant);
-  border-radius: var(--md-sys-shape-corner-extra-small);
-  background: transparent;
-  cursor: pointer;
-}
-
-.md-color-picker__hex {
-  height: 40px;
-  padding: 0 12px;
-  border: 1px solid var(--md-sys-color-outline-variant);
+  min-height: 56px;
+  padding: 8px 16px;
   border-radius: var(--md-sys-shape-corner-extra-small);
   background: var(--md-sys-color-surface-container-highest);
-  color: var(--md-sys-color-on-surface);
-  font-size: var(--md-sys-typescale-body-medium-size);
-  font-family: var(--md-sys-typescale-font);
-  font-weight: 500;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    border-color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard),
+    background-color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+  overflow: hidden;
 }
 
-.md-color-picker__hex:focus {
-  outline: 2px solid var(--md-sys-color-primary);
-  outline-offset: -2px;
-  border-color: transparent;
+.md-color-picker__visual:hover {
+  border-color: var(--md-sys-color-on-surface);
+}
+
+.md-color-picker__visual:focus-within {
+  border-color: var(--md-sys-color-primary);
+  border-width: 2px;
+  padding: 7px 15px;
+}
+
+.md-color-picker__visual-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--swatch-color);
+  flex-shrink: 0;
+  border: 2px solid rgb(0 0 0 / 0.08);
+  transition: background-color var(--md-sys-motion-duration-short2)
+    var(--md-sys-motion-easing-standard);
+}
+
+.md-color-picker__visual-swatch .material-symbols-rounded {
+  font-size: 20px;
+}
+
+.md-color-picker__visual-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.md-color-picker__visual-label {
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-color-picker__visual-hint {
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.2;
+}
+
+/* Native color input is visually hidden but still keyboard / tap
+   accessible. Tapping the wrapper label above opens the system picker. */
+.md-color-picker__visual input[type='color'] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
 }

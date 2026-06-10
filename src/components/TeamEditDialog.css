@@ -1,7 +1,8 @@
 /* ==========================================================================
-   TeamEditDialog — modal that lets the user adjust team names and colors
-   in-place from the live scoreboard. Renders inside the standard Dialog
-   portal, so this file only adds layout for the inner content.
+   TeamEditDialog — modal for adjusting team names and colors in-place from
+   the live scoreboard. The modal is composed of two "team cards" rendered
+   in a column on narrow viewports and side-by-side on wide ones. Each card
+   follows the M3 "outlined / filled" list pattern.
    ========================================================================== */
 
 .team-edit-dialog {
@@ -13,48 +14,115 @@
 
 .team-edit-dialog__hint {
   margin: 0;
+  padding: 12px 16px;
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
   font-size: var(--md-sys-typescale-body-medium-size);
   line-height: var(--md-sys-typescale-body-medium-line);
-  color: var(--md-sys-color-on-surface-variant);
 }
 
-.team-edit-dialog__team {
-  display: flex;
-  flex-direction: column;
+.team-edit-dialog__teams {
+  display: grid;
+  grid-template-columns: 1fr;
   gap: 12px;
 }
 
-.team-edit-dialog__team-title {
+@media (min-width: 640px) {
+  .team-edit-dialog__teams {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+/* ---- Team card -------------------------------------------------------- */
+.team-edit-dialog__team {
   display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 16px;
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* A subtle left accent stripe ties the card to the team identity. It is
+   driven by the live color so the user always sees which side they are
+   editing. The stripe is rendered with a box-shadow so it does not push
+   the card content. */
+.team-edit-dialog__team--a {
+  box-shadow: inset 3px 0 0 0 var(--md-sys-color-primary);
+}
+.team-edit-dialog__team--b {
+  box-shadow: inset 3px 0 0 0 var(--md-sys-color-tertiary);
+}
+
+.team-edit-dialog__team-header {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+  min-height: 56px;
+}
+
+/* ---- Avatar ---------------------------------------------------------- */
+.team-edit-dialog__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--md-sys-shape-corner-full);
+  flex-shrink: 0;
+  transition:
+    background-color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.team-edit-dialog__avatar .material-symbols-rounded {
+  font-size: 24px;
+}
+
+/* ---- Title block ----------------------------------------------------- */
+.team-edit-dialog__team-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
+}
+
+.team-edit-dialog__team-title {
   margin: 0;
-  font-size: var(--md-sys-typescale-title-small-size);
-  line-height: var(--md-sys-typescale-title-small-line);
-  font-weight: var(--md-sys-typescale-title-small-weight);
-  letter-spacing: var(--md-sys-typescale-title-small-tracking);
+  font-size: var(--md-sys-typescale-title-medium-size);
+  line-height: var(--md-sys-typescale-title-medium-line);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+  letter-spacing: var(--md-sys-typescale-title-medium-tracking);
   color: var(--md-sys-color-on-surface);
 }
 
-.team-edit-dialog__team-title .material-symbols-rounded {
-  color: var(--md-sys-color-primary);
-  font-size: 20px;
+.team-edit-dialog__team-subtitle {
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: var(--md-sys-typescale-body-small-line);
+  color: var(--md-sys-color-on-surface-variant);
 }
 
-/* Live preview chip — uses the team's own color so the user can see how
-   the new name + swatch combo will look against the live scoreboard. */
+/* ---- Live preview chip ---------------------------------------------- */
 .team-edit-dialog__chip {
-  margin-left: auto;
-  padding: 4px 12px;
+  max-width: 140px;
+  padding: 6px 12px;
   border-radius: var(--md-sys-shape-corner-full);
   font-size: var(--md-sys-typescale-label-medium-size);
   line-height: var(--md-sys-typescale-label-medium-line);
   font-weight: var(--md-sys-typescale-label-medium-weight);
   letter-spacing: var(--md-sys-typescale-label-medium-tracking);
-  max-width: 60%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  text-align: center;
+  box-shadow: var(--md-sys-elevation-level1);
   transition:
     background-color var(--md-sys-motion-duration-short4)
       var(--md-sys-motion-easing-standard),
@@ -62,6 +130,15 @@
       var(--md-sys-motion-easing-standard);
 }
 
+@media (max-width: 380px) {
+  /* On very narrow phones the chip can crowd the title. Hide it; the
+     avatar + name input still communicate the live color. */
+  .team-edit-dialog__chip {
+    display: none;
+  }
+}
+
+/* ---- Actions -------------------------------------------------------- */
 .team-edit-dialog__actions {
   display: flex;
   justify-content: flex-end;

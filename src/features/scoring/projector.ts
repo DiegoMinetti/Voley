@@ -57,9 +57,19 @@ export const projectMatch = (
           break
         }
 
-        projection.points[event.team] += 1
         const currentSet = projection.completedSets.length + 1
         const targetPoints = getSetTargetPoints(record.config, currentSet)
+
+        // Cap the score at the configured target so the counter never goes
+        // past the last allowed value. Without this guard, tapping "add"
+        // past the set's winning point would let the counter wrap around
+        // to 1 (because the set is won, points reset to 0/0, and the next
+        // tap brings the counter to 1).
+        if (projection.points[event.team] >= targetPoints) {
+          break
+        }
+
+        projection.points[event.team] += 1
         const setWinner = resolveSetWinner(
           projection.points.A,
           projection.points.B,
@@ -91,6 +101,7 @@ export const projectMatch = (
           break
         }
 
+        // Cap the score at 0 so the counter never goes negative.
         projection.points[event.team] = Math.max(0, projection.points[event.team] - 1)
         break
       }

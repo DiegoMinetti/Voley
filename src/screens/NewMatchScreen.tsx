@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { Button } from '../components/m3/Button'
 import { ColorPicker } from '../components/m3/ColorPicker'
 import { Icon } from '../components/m3/Icon'
@@ -8,7 +7,6 @@ import { Select } from '../components/m3/Select'
 import { Switch } from '../components/m3/Switch'
 import { TextField } from '../components/m3/TextField'
 import { TopAppBar } from '../components/m3/TopAppBar'
-import { isValidHexColor } from '../utils/format'
 import { defaultMatchConfig } from '../storage/defaults'
 import type { BestOfSets, MatchConfig, TeamConfig, TeamSide } from '../types/models'
 import { teamColorPalette } from '../features/teams/palette'
@@ -31,29 +29,12 @@ export const NewMatchScreen = ({
   onStart,
   onCancel,
 }: NewMatchScreenProps) => {
-  const [hexInputs, setHexInputs] = useState<Record<TeamSide, string>>({
-    A: teams.A.color,
-    B: teams.B.color,
-  })
-
   const setTeamName = (side: TeamSide, name: string): void => {
     onTeamChange(side, { ...teams[side], name })
   }
 
   const setTeamColor = (side: TeamSide, color: string): void => {
-    setHexInputs((prev) => ({ ...prev, [side]: color }))
-    if (isValidHexColor(color)) {
-      onTeamChange(side, { ...teams[side], color })
-    }
-  }
-
-  const commitHex = (side: TeamSide): void => {
-    const value = hexInputs[side].trim()
-    if (isValidHexColor(value)) {
-      onTeamChange(side, { ...teams[side], color: value })
-    } else {
-      setHexInputs((prev) => ({ ...prev, [side]: teams[side].color }))
-    }
+    onTeamChange(side, { ...teams[side], color })
   }
 
   const setBestOf = (value: number): void => {
@@ -82,18 +63,14 @@ export const NewMatchScreen = ({
         <TeamSection
           side="A"
           team={teams.A}
-          hexValue={hexInputs.A}
           onName={(name) => setTeamName('A', name)}
           onColor={(color) => setTeamColor('A', color)}
-          onCommitHex={() => commitHex('A')}
         />
         <TeamSection
           side="B"
           team={teams.B}
-          hexValue={hexInputs.B}
           onName={(name) => setTeamName('B', name)}
           onColor={(color) => setTeamColor('B', color)}
-          onCommitHex={() => commitHex('B')}
         />
 
         <section className="form-screen__section" aria-labelledby="config-title">
@@ -219,20 +196,11 @@ export const NewMatchScreen = ({
 interface TeamSectionProps {
   side: TeamSide
   team: TeamConfig
-  hexValue: string
   onName: (name: string) => void
   onColor: (color: string) => void
-  onCommitHex: () => void
 }
 
-const TeamSection = ({
-  side,
-  team,
-  hexValue,
-  onName,
-  onColor,
-  onCommitHex,
-}: TeamSectionProps) => {
+const TeamSection = ({ side, team, onName, onColor }: TeamSectionProps) => {
   return (
     <section
       className="form-screen__section"
@@ -253,19 +221,6 @@ const TeamSection = ({
         value={team.color}
         palette={teamColorPalette}
         onChange={onColor}
-        onCustomHexChange={(value) =>
-          onColor(value.startsWith('#') ? value : `#${value}`)
-        }
-        id={`color-${side}`}
-      />
-      {/* Hidden commit trigger via onBlur is handled inside ColorPicker.
-          We still expose hexValue via prop for external sync. */}
-      <input
-        type="hidden"
-        value={hexValue}
-        onBlur={onCommitHex}
-        readOnly
-        aria-hidden
       />
     </section>
   )

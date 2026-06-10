@@ -66,39 +66,109 @@
   padding: 0;
 }
 
+/* ==========================================================================
+   Team defaults card — same M3 pattern as TeamEditDialog so the two
+   screens feel like one product.
+   ========================================================================== */
 .settings-screen__team {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 8px 16px 12px;
+  gap: 16px;
+  padding: 16px;
+  background: var(--md-sys-color-surface-container-low);
+  border-radius: var(--md-sys-shape-corner-large);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  margin: 0 12px 12px;
 }
 
-.settings-screen__team + .settings-screen__team {
-  padding-top: 16px;
+/* A subtle left accent stripe ties the card to the team identity. It is
+   driven by the M3 primary/tertiary tokens so it stays consistent across
+   light & dark schemes. */
+.settings-screen__team--a {
+  box-shadow: inset 3px 0 0 0 var(--md-sys-color-primary);
+}
+.settings-screen__team--b {
+  box-shadow: inset 3px 0 0 0 var(--md-sys-color-tertiary);
 }
 
 .settings-screen__team-header {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 12px;
-  padding: 4px 0;
+  min-height: 56px;
 }
 
-.settings-screen__team-swatch {
-  width: 28px;
-  height: 28px;
+.settings-screen__team-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
   border-radius: var(--md-sys-shape-corner-full);
-  border: 2px solid var(--md-sys-color-outline-variant);
-  box-shadow: 0 0 0 2px var(--md-sys-color-surface);
   flex-shrink: 0;
+  transition:
+    background-color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short2)
+      var(--md-sys-motion-easing-standard);
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.settings-screen__team-avatar .material-symbols-rounded {
+  font-size: 24px;
+}
+
+.settings-screen__team-meta {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  gap: 2px;
 }
 
 .settings-screen__team-title {
-  font-size: var(--md-sys-typescale-title-small-size);
-  line-height: var(--md-sys-typescale-title-small-line);
-  font-weight: var(--md-sys-typescale-title-small-weight);
-  letter-spacing: var(--md-sys-typescale-title-small-tracking);
+  margin: 0;
+  font-size: var(--md-sys-typescale-title-medium-size);
+  line-height: var(--md-sys-typescale-title-medium-line);
+  font-weight: var(--md-sys-typescale-title-medium-weight);
+  letter-spacing: var(--md-sys-typescale-title-medium-tracking);
   color: var(--md-sys-color-on-surface);
+}
+
+.settings-screen__team-subtitle {
+  font-size: var(--md-sys-typescale-body-small-size);
+  line-height: var(--md-sys-typescale-body-small-line);
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+/* Live preview chip — uses the team's own color so the user can see how
+   the new name + swatch combo will look on the scoreboard. */
+.settings-screen__team-chip {
+  max-width: 140px;
+  padding: 6px 12px;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  line-height: var(--md-sys-typescale-label-medium-line);
+  font-weight: var(--md-sys-typescale-label-medium-weight);
+  letter-spacing: var(--md-sys-typescale-label-medium-tracking);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  box-shadow: var(--md-sys-elevation-level1);
+  transition:
+    background-color var(--md-sys-motion-duration-short4)
+      var(--md-sys-motion-easing-standard),
+    color var(--md-sys-motion-duration-short4)
+      var(--md-sys-motion-easing-standard);
+}
+
+@media (max-width: 380px) {
+  /* On very narrow phones the chip can crowd the title. Hide it; the
+     avatar + name input still communicate the live color. */
+  .settings-screen__team-chip {
+    display: none;
+  }
 }
 
 .settings-screen__footer {

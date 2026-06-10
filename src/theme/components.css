@@ -24,6 +24,19 @@
   width: calc(100% - 16px);
 }
 
+/* Vertical variant — used inside horizontal toolbars / top app bars to
+   separate groups of actions. Sits between flex children as a thin
+   divider with a small gap on each side. */
+.md-divider--vertical {
+  width: 1px;
+  height: 24px;
+  align-self: center;
+  flex-shrink: 0;
+  margin: 0 8px;
+  border-top: 0;
+  border-inline-start: 1px solid var(--md-sys-color-surface-variant);
+}
+
 .md-sr-only {
   position: absolute !important;
   width: 1px !important;
@@ -600,7 +613,7 @@
 .md-top-app-bar__actions {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 4px;
   margin-inline-end: 4px;
 }
 

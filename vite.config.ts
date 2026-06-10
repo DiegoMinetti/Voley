@@ -15,7 +15,7 @@ export default defineConfig(() => {
         registerType: 'autoUpdate',
         includeAssets: ['icon.svg', 'favicon.svg'],
         manifest: {
-          name: 'Voley Match PWA',
+          name: 'Voley Match',
           short_name: 'Voley',
           description: 'Marcador offline de voley con Material Design 3',
           theme_color: '#6750a4',

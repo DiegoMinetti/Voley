@@ -55,23 +55,25 @@
 
 /* Floating chevron pill that toggles the top bar / bottom controls.
    Lives directly on the `.match-screen` container (which is
-   `position: relative`) so we can anchor it to the viewport's top edge
-   independent of the TopAppBar's height.
+   `position: relative`) so it can be positioned absolutely with respect
+   to the viewport while the TopAppBar slides in/out of layout above it.
 
-   • Chrome visible  : the handle sits at `top: 6px`, floating *over*
-                       the TopAppBar (z-index above the bar) so it's
-                       always reachable. Because it's centered, it
-                       doesn't collide with the leading back button or
-                       the trailing action icons.
+   • Chrome visible  : the handle sits anchored to the *bottom* edge of
+                       the TopAppBar (top ≈ 64px - half pill height),
+                       straddling the bar so it's always reachable
+                       without colliding with the leading back button
+                       or the trailing action icons.
    • Chrome hidden   : the handle stays at the top of the viewport, but
                        shrinks to a tiny semi-transparent hint so it
-                       never competes with the score numbers.
+                       never competes with the score numbers. Position
+                       nudged a few px lower than before for easier
+                       tapping.
 
    The handle is intentionally small (44×20 → 32×14) so it reads as a
    notch, not a FAB. */
 .match-screen__chrome-toggle {
   position: absolute;
-  top: 6px;
+  top: 54px;
   left: 50%;
   /* Must beat the .md-top-app-bar z-index (10) so the pill stays reachable when the chrome is visible. */
   z-index: 20;
@@ -119,7 +121,7 @@
    much smaller and semi-transparent. The chevron still rotates to
    point down, telling the user it can be expanded. */
 .match-screen--chrome-hidden .match-screen__chrome-toggle {
-  top: 8px;
+  top: 12px;
   width: 32px;
   height: 14px;
   opacity: 0.45;
@@ -151,10 +153,10 @@
   .match-screen__chrome-toggle {
     width: 40px;
     height: 18px;
-    top: 4px;
+    top: 51px;
   }
   .match-screen--chrome-hidden .match-screen__chrome-toggle {
-    top: 6px;
+    top: 10px;
     width: 28px;
     height: 12px;
   }
@@ -425,4 +427,23 @@
 .match-screen__history-empty .material-symbols-rounded {
   font-size: 36px;
   color: var(--md-sys-color-outline);
+}
+
+/* ==========================================================================
+   Match-finish dialog body
+   ========================================================================== */
+
+.match-screen__finish-summary {
+  margin: 0;
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line);
+  font-weight: var(--md-sys-typescale-body-large-weight);
+  color: var(--md-sys-color-on-surface);
+}
+
+.match-screen__finish-hint {
+  margin: 8px 0 0;
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line);
+  color: var(--md-sys-color-on-surface-variant);
 }

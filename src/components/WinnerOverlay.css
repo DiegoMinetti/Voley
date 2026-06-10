@@ -17,7 +17,8 @@
   -webkit-backdrop-filter: blur(6px);
   opacity: 0;
   pointer-events: none;
-  transition: opacity 280ms var(--md-sys-motion-easing-emphasized);
+  /* Sin demora: el overlay aparece en el mismo frame en que se monta. */
+  transition: none;
 }
 
 .winner-overlay--open {
@@ -27,6 +28,7 @@
 
 .winner-overlay--closing {
   opacity: 0;
+  transition: opacity 120ms var(--md-sys-motion-easing-standard);
 }
 
 .winner-overlay__card {
@@ -43,21 +45,21 @@
   color: var(--md-sys-color-on-surface);
   box-shadow: var(--md-sys-elevation-3);
   text-align: center;
-  transform: scale(0.85) translateY(16px);
-  opacity: 0;
-  transition:
-    transform 360ms var(--md-sys-motion-easing-emphasized-decelerate),
-    opacity 360ms var(--md-sys-motion-easing-emphasized-decelerate);
+  /* Estado final directo: sin escala intermedia, sin opacidad, sin traslado. */
+  transform: none;
+  opacity: 1;
+  transition: none;
 }
 
 .winner-overlay--open .winner-overlay__card {
-  transform: scale(1) translateY(0);
+  transform: none;
   opacity: 1;
 }
 
 .winner-overlay--closing .winner-overlay__card {
-  transform: scale(0.92) translateY(8px);
+  transform: none;
   opacity: 0;
+  transition: opacity 120ms var(--md-sys-motion-easing-standard);
 }
 
 .winner-overlay__trophy {
@@ -70,8 +72,9 @@
   background: color-mix(in srgb, var(--winner-color) 22%, var(--md-sys-color-surface-container));
   color: var(--winner-color);
   margin-bottom: 4px;
-  animation: winner-overlay__trophy-pop 700ms
-    var(--md-sys-motion-easing-emphasized-decelerate) 120ms backwards;
+  /* Pop rápido y sin delay para que el trofeo ya se vea con el cartel. */
+  animation: winner-overlay__trophy-pop 220ms
+    var(--md-sys-motion-easing-emphasized-decelerate) backwards;
 }
 
 .winner-overlay__trophy .material-symbols-rounded {
@@ -141,16 +144,13 @@
 
 @keyframes winner-overlay__trophy-pop {
   0% {
-    transform: scale(0) rotate(-12deg);
-    opacity: 0;
+    transform: scale(0.85);
   }
   60% {
-    transform: scale(1.15) rotate(6deg);
-    opacity: 1;
+    transform: scale(1.06);
   }
   100% {
-    transform: scale(1) rotate(0deg);
-    opacity: 1;
+    transform: scale(1);
   }
 }
 

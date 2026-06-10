@@ -2,12 +2,10 @@ import { useState } from 'react'
 import { Button } from './m3/Button'
 import { ColorPicker } from './m3/ColorPicker'
 import { Dialog } from './m3/Dialog'
-import { Divider } from './m3/Divider'
 import { Icon } from './m3/Icon'
 import { TextField } from './m3/TextField'
 import { teamColorPalette } from '../features/teams/palette'
 import type { TeamConfig, TeamSide } from '../types/models'
-import { isValidHexColor } from '../utils/format'
 import './TeamEditDialog.css'
 
 interface TeamEditDialogProps {
@@ -70,10 +68,6 @@ interface TeamEditBodyProps {
 
 const TeamEditBody = ({ teams, onSave, onClose }: TeamEditBodyProps) => {
   const [working, setWorking] = useState<Record<TeamSide, TeamConfig>>(teams)
-  const [hexInputs, setHexInputs] = useState<Record<TeamSide, string>>({
-    A: teams.A.color,
-    B: teams.B.color,
-  })
   const [nameErrors, setNameErrors] = useState<Record<TeamSide, string>>({
     A: '',
     B: '',
@@ -88,19 +82,7 @@ const TeamEditBody = ({ teams, onSave, onClose }: TeamEditBodyProps) => {
   }
 
   const setColor = (side: TeamSide, color: string): void => {
-    setHexInputs((prev) => ({ ...prev, [side]: color }))
-    if (isValidHexColor(color)) {
-      setWorking((prev) => ({ ...prev, [side]: { ...prev[side], color } }))
-    }
-  }
-
-  const commitHex = (side: TeamSide): void => {
-    const value = hexInputs[side].trim()
-    if (isValidHexColor(value)) {
-      setWorking((prev) => ({ ...prev, [side]: { ...prev[side], color: value } }))
-    } else {
-      setHexInputs((prev) => ({ ...prev, [side]: working[side].color }))
-    }
+    setWorking((prev) => ({ ...prev, [side]: { ...prev[side], color } }))
   }
 
   const handleSave = (): void => {
@@ -125,26 +107,25 @@ const TeamEditBody = ({ teams, onSave, onClose }: TeamEditBodyProps) => {
     <>
       <div className="team-edit-dialog">
         <p className="team-edit-dialog__hint">
-          Cambiá el nombre o el color de cada equipo. Los cambios se aplican
-          al instante en el marcador del partido.
+          Personalizá el nombre y el color de cada equipo. Vas a ver los
+          cambios reflejados en el marcador del partido.
         </p>
-        <TeamEditor
-          side="A"
-          team={working.A}
-          error={nameErrors.A}
-          onName={(name) => setName('A', name)}
-          onColor={(color) => setColor('A', color)}
-          onCommitHex={() => commitHex('A')}
-        />
-        <Divider />
-        <TeamEditor
-          side="B"
-          team={working.B}
-          error={nameErrors.B}
-          onName={(name) => setName('B', name)}
-          onColor={(color) => setColor('B', color)}
-          onCommitHex={() => commitHex('B')}
-        />
+        <div className="team-edit-dialog__teams">
+          <TeamEditor
+            side="A"
+            team={working.A}
+            error={nameErrors.A}
+            onName={(name) => setName('A', name)}
+            onColor={(color) => setColor('A', color)}
+          />
+          <TeamEditor
+            side="B"
+            team={working.B}
+            error={nameErrors.B}
+            onName={(name) => setName('B', name)}
+            onColor={(color) => setColor('B', color)}
+          />
+        </div>
       </div>
       <div className="team-edit-dialog__actions">
         <Button variant="text" onClick={onClose}>
@@ -169,7 +150,6 @@ interface TeamEditorProps {
   error: string
   onName: (name: string) => void
   onColor: (color: string) => void
-  onCommitHex: () => void
 }
 
 const TeamEditor = ({
@@ -178,58 +158,61 @@ const TeamEditor = ({
   error,
   onName,
   onColor,
-  onCommitHex,
 }: TeamEditorProps) => {
-  const [hexDraft, setHexDraft] = useState(team.color)
+  const sideLabel = side === 'A' ? 'Equipo A' : 'Equipo B'
+  const sideIcon = side === 'A' ? 'shield' : 'workspace_premium'
+  const onColorForChip = pickOnColor(team.color)
+  const previewName = team.name.trim() || sideLabel
 
   return (
     <section
-      className="team-edit-dialog__team"
+      className={`team-edit-dialog__team team-edit-dialog__team--${side.toLowerCase()}`}
       aria-labelledby={`team-edit-${side}-title`}
     >
-      <h3 id={`team-edit-${side}-title`} className="team-edit-dialog__team-title">
-        <Icon name={side === 'A' ? 'shield' : 'workspace_premium'} />
-        Equipo {side}
-        <span
-          className="team-edit-dialog__chip"
-          style={{
-            backgroundColor: team.color,
-            color: pickOnColor(team.color),
-          }}
+      <header className="team-edit-dialog__team-header">
+        <div
+          className="team-edit-dialog__avatar"
+          style={{ backgroundColor: team.color, color: onColorForChip }}
           aria-hidden
         >
-          {team.name || `Equipo ${side}`}
+          <Icon name={sideIcon} filled />
+        </div>
+        <div className="team-edit-dialog__team-meta">
+          <h3
+            id={`team-edit-${side}-title`}
+            className="team-edit-dialog__team-title"
+          >
+            {sideLabel}
+          </h3>
+          <span className="team-edit-dialog__team-subtitle">
+            Lado {side} del marcador
+          </span>
+        </div>
+        <span
+          className="team-edit-dialog__chip"
+          style={{ backgroundColor: team.color, color: onColorForChip }}
+          aria-live="polite"
+        >
+          {previewName}
         </span>
-      </h3>
+      </header>
+
       <TextField
-        label={`Nombre equipo ${side}`}
+        label={`Nombre del ${sideLabel.toLowerCase()}`}
         value={team.name}
         onChange={(event) => onName(event.target.value)}
         leadingIcon="edit"
         error={Boolean(error)}
         {...(error ? { supportingText: error } : {})}
         maxLength={32}
+        autoComplete="off"
       />
+
       <ColorPicker
-        label={`Color del equipo ${side}`}
+        label={`Color del ${sideLabel.toLowerCase()}`}
         value={team.color}
         palette={teamColorPalette}
         onChange={onColor}
-        onCustomHexChange={(value) => {
-          const normalized = value.startsWith('#') ? value : `#${value}`
-          setHexDraft(normalized)
-          onColor(normalized)
-        }}
-        id={`match-color-${side}`}
-      />
-      <input
-        type="hidden"
-        value={hexDraft}
-        onBlur={() => {
-          onCommitHex()
-        }}
-        readOnly
-        aria-hidden
       />
     </section>
   )
